@@ -9,7 +9,7 @@ interface GifSearchContract {
         fun showGifs(gifs: List<Gif>)
     }
 
-    interface Presenter : MvpPresenter<MvpView> {
+    interface Presenter : MvpPresenter<View> {
         fun loadGifs()
     }
 }

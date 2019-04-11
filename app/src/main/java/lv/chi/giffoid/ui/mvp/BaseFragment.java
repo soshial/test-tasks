@@ -16,9 +16,6 @@ import butterknife.Unbinder;
 import lv.chi.giffoid.app.GiffoidApp;
 import lv.chi.giffoid.di.ActivityComponent;
 import lv.chi.giffoid.di.DaggerActivityComponent;
-import retrofit2.Call;
-
-import java.util.ArrayList;
 
 public abstract class BaseFragment extends Fragment {
     protected Context context;
@@ -38,7 +35,7 @@ public abstract class BaseFragment extends Fragment {
         final ActivityComponent activityComponent = DaggerActivityComponent.builder()
                 .appComponent(GiffoidApp.appComponent)
                 .build();
-        // we cannot inject in parent class, hence we demand {@link #injecting() and getPresenter()} to be overridden
+        // we cannot inject in parent class, hence we demand {@link #injecting() and providePresenter()} to be overridden
         injecting(activityComponent);
         handler = new Handler();
     }

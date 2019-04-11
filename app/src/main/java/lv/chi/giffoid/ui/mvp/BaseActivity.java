@@ -43,7 +43,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         final ActivityComponent activityComponent = DaggerActivityComponent.builder()
                 .appComponent(GiffoidApp.appComponent)
                 .build();
-        // we cannot inject in parent class, hence we demand {@link #injecting() and getPresenter()} to be overridden
+        // we cannot inject in parent class, hence we demand {@link #injecting() and providePresenter()} to be overridden
         injecting(activityComponent);
 
         handler = new Handler();
