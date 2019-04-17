@@ -1,7 +1,7 @@
-package lv.chi.giffoid.app
+package lv.chi.giffoid.api
 
 import io.reactivex.Single
-import lv.chi.giffoid.model.Gif
+import lv.chi.giffoid.data.Gif
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -9,10 +9,10 @@ interface API {
 
     @GET("v1/gifs/search")
     fun getGifs(
-        @Query("api_key") apiKey: String,
         @Query("q") searchQuery: String,
-        @Query("limit") limit: Int = 3,
+        @Query("api_key") apiKey: String,
+        @Query("limit") limit: Int,
         @Query("offset") offset: Int = 0
-    ): Single<List<Gif>>
+    ): Single<EnvelopeList<Gif>>
 
 }

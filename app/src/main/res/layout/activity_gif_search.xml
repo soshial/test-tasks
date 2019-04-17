@@ -7,15 +7,54 @@
     android:orientation="vertical">
 
     <EditText
+        android:id="@+id/search_field"
+        android:hint="@string/edittext_search_hint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Search me please" />
+        android:inputType="text"
+        android:visibility="gone" />
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/search_results_recycler_view"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layoutManager="android.support.v7.widget.GridLayoutManager"
-        app:spanCount="3"
-        tools:listitem="@layout/listitem_gif_result" />
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/search_results_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            app:layoutManager="android.support.v7.widget.StaggeredGridLayoutManager"
+            app:spanCount="@integer/search_grid_columns"
+            tools:listitem="@layout/listitem_gif_result" />
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/nothing_found"
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            android:layout_gravity="top"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/giffoid_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/ic_launcher_round"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/no_results_explanation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Let's have some search, buddy?"
+                android:textColor="#000"
+                android:textSize="22sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/giffoid_icon" />
+        </android.support.constraint.ConstraintLayout>
+    </FrameLayout>
 </LinearLayout>

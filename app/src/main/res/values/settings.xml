@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- search settings -->
+    <item name="search_grid_columns" type="integer">2</item>
+    <item name="search_batch_limit" type="integer">50</item>
+    <item name="search_visible_threshold" type="integer">5</item>
+    <item name="api_key" type="string">sB9wP0usZzneQq3rkYcvt25dvz1bPXIG</item>
+</resources>

@@ -1,7 +1,7 @@
 package lv.chi.giffoid.di;
 
 import dagger.Component;
-import lv.chi.giffoid.app.API;
+import lv.chi.giffoid.api.API;
 
 import javax.inject.Singleton;
 

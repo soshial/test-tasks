@@ -7,7 +7,7 @@ import dagger.Module;
 import dagger.Provides;
 import io.reactivex.schedulers.Schedulers;
 import lv.chi.giffoid.BuildConfig;
-import lv.chi.giffoid.app.API;
+import lv.chi.giffoid.api.API;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;

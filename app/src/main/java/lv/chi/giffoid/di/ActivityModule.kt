@@ -2,6 +2,8 @@ package lv.chi.giffoid.di
 
 import dagger.Binds
 import dagger.Module
+import lv.chi.giffoid.data.GifRepository
+import lv.chi.giffoid.data.GifRepositoryImpl
 import lv.chi.giffoid.ui.gif_search.GifSearchContract
 import lv.chi.giffoid.ui.gif_search.GifSearchPresenter
 
@@ -12,4 +14,6 @@ abstract class ActivityModule {
     @Binds
     abstract fun providesGifSearchPresenter(presenter: GifSearchPresenter): GifSearchContract.Presenter
 
+    @Binds
+    abstract fun providesGifRepository(GifRepository: GifRepositoryImpl): GifRepository
 }

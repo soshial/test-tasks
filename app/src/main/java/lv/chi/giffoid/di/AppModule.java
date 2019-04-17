@@ -5,6 +5,8 @@ import android.content.pm.ApplicationInfo;
 import android.content.res.Resources;
 import dagger.Module;
 import dagger.Provides;
+import lv.chi.giffoid.R;
+import lv.chi.giffoid.app.AppSettings;
 import lv.chi.giffoid.app.RxSchedulers;
 import lv.chi.giffoid.app.SchedulerProvider;
 
@@ -25,6 +27,16 @@ public class AppModule {
         int stringId = applicationInfo.labelRes;
         String appNameString = stringId == 0 ? applicationInfo.nonLocalizedLabel.toString() : context.getString(stringId);
         return appNameString.replaceAll("\\s+", "_");
+    }
+
+    @Provides
+    AppSettings getAppSettings(Context context) {
+        return new AppSettings(
+                context.getResources().getInteger(R.integer.search_grid_columns),
+                context.getResources().getInteger(R.integer.search_batch_limit),
+                context.getResources().getInteger(R.integer.search_visible_threshold),
+                context.getResources().getString(R.string.api_key)
+        );
     }
 
     @Provides
