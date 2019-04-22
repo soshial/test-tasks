@@ -43,21 +43,22 @@ dependencies {
     kapt 'com.github.bumptech.glide:compiler:4.9.0'
     implementation "com.android.support:recyclerview-v7:$android_support"
     implementation "com.android.support:design:$android_support"
-    def butterknife = "8.8.1"
+    def butterknife = '9.0.0'
     implementation "com.jakewharton:butterknife:$butterknife"
     kapt "com.jakewharton:butterknife-compiler:$butterknife"
 
     // other
-    def retrofit = "2.4.0"
+    def retrofit = '2.5.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "com.squareup.retrofit2:retrofit:$retrofit"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit"
-    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit"
     implementation 'com.google.code.gson:gson:2.8.5'
+    //  todo  implementation "com.android.support:support-annotations:$android_support"
+
     // debug
     implementation 'com.jakewharton.timber:timber:4.7.1'
-    implementation 'com.facebook.stetho:stetho:1.5.0'
-    implementation 'com.facebook.stetho:stetho-okhttp3:1.5.0'
+    implementation 'com.facebook.stetho:stetho:1.5.1'
+    implementation 'com.facebook.stetho:stetho-okhttp3:1.5.1'
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.4'
     releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
 
@@ -67,14 +68,15 @@ dependencies {
 
     // Rx
     implementation 'io.reactivex.rxjava2:rxjava:2.2.8'
-    implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
     implementation 'nl.littlerobots.rxlint:rxlint:1.7.3'
-    //  todo  implementation "com.android.support:support-annotations:$android_support"
+    implementation 'com.jakewharton.rxbinding2:rxbinding:2.2.0'
+    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit"
 
     // test
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.mockito:mockito-core:2.23.0'
-    testImplementation 'org.assertj:assertj-core:3.11.1'
+    testImplementation 'org.assertj:assertj-core:3.12.2'
     testImplementation "com.google.dagger:dagger:$dagger2"
     testAnnotationProcessor "com.google.dagger:dagger-compiler:$dagger2"
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
