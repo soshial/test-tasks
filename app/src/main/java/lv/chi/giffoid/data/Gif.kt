@@ -6,31 +6,34 @@ data class Gif(
     val type: String,
     val id: String,
     val title: String,
-    @SerializedName("images") val imageUrls: ImageUrls
+    val url: String,
+    @SerializedName("images")
+    val imageUrls: ImageTypes
 ) {
-    val ratio: Float = 1.0f * imageUrls.fixed_width.width / imageUrls.fixed_width.height
+//    @Transient
+    /**
+     * We need dimensions ratio to properly display ViewHolder before image loads
+     */
+    val ratio: Float
+        get() = 1.0f * imageUrls.original.width / imageUrls.original.height
     @Transient
     var pageNumber: Int = 0
     @Transient
     var listNumber: Int = 0
 }
 
-fun Gif.getRatio(): Float = 1.0f * imageUrls.fixed_width.width / imageUrls.fixed_width.height
-
-data class ImageUrls(
-    val preview_webp: WebpPreview,
-
+data class ImageTypes(
+    val original: UrlsAndSizes,
     @SerializedName("480w_still")
-    val jpg: Jpg,
-    val fixed_width: FixedWidth
+    val jpg: UrlsAndSizes,
+    @SerializedName("fixed_width")
+    val fixedWidth: UrlsAndSizes
 )
 
-data class WebpPreview(val url: String)
-data class FixedWidth(
-    val url: String,
+data class UrlsAndSizes(
+    @SerializedName("url")
+    val gif: String,
     val webp: String,
     val width: Int,
     val height: Int
 )
-
-data class Jpg(val url: String)

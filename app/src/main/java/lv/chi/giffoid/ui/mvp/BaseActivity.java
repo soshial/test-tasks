@@ -48,6 +48,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         handler = new Handler();
         setContentView(getContentLayout());
+        unbinder = ButterKnife.bind(this);
     }
 
     /**
@@ -64,7 +65,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     @CallSuper
     protected void onStart() {
         super.onStart();
-        unbinder = ButterKnife.bind(this);
     }
 
     /**
@@ -77,8 +77,13 @@ public abstract class BaseActivity extends AppCompatActivity {
     @CallSuper
     protected void onStop() {
         super.onStop();
-        unbinder.unbind();
         handler.removeCallbacksAndMessages(null);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbinder.unbind();
     }
 
     /**

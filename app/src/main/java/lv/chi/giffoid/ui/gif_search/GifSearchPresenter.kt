@@ -12,44 +12,60 @@ class GifSearchPresenter @Inject constructor(
     private val appSettings: AppSettings
 ) : BasePresenter<GifSearchContract.View>(), GifSearchContract.Presenter {
 
-    private var hasLoadedBefore: Boolean = false // todo
-    private var searchQuery: String = ""
-    private val gifs: MutableList<Gif> = mutableListOf()
-    private var pageNumber: Int = 0
-    override var isLoading = false
+    override val currentState = CurrentState(mutableListOf())
+
+    override fun bind(view: GifSearchContract.View) {
+        super.bind(view)
+//        compositeDisposable.add()
+    }
 
     override fun loadGifs(searchQuery: String) {
-        if (isLoading || hasLoadedBefore) return
-        this.searchQuery = searchQuery
-        pageNumber = 0
-        gifs.clear() // we should clear our list after new search is initiated
-        hasLoadedBefore = true
-        launchGifsRxCode(Consumer { view?.showAllGifs(this.gifs) })
+        // disregard unchanged or short strings
+        if (currentState.isLoading || searchQuery.length < 2 || currentState.searchQuery.equals(searchQuery)) return
+        currentState.searchQuery = searchQuery.trim()
+        currentState.pageNumber = 0
+        currentState.gifs.clear() // we should clear our list after new search is initiated
+        launchGifsRxCode(Consumer { view?.showAllGifs(currentState.gifs) })
     }
 
     override fun loadMoreGifs() {
-        if (isLoading) return
-        launchGifsRxCode(Consumer { gifs -> view?.showLoadedGifs(this.gifs, gifs.size) })
+        if (currentState.isLoading) return
+        launchGifsRxCode(Consumer { gifs -> view?.showLoadedGifs(currentState.gifs, gifs.size) })
     }
 
     private fun launchGifsRxCode(onSuccess: Consumer<List<Gif>>) {
         var listNumber = 0
-        isLoading = true
+        currentState.isLoading = true
         compositeDisposable.add(
             repository.loadGifs(
-                searchQuery,
-"jhgkhg",//                appSettings.apiKey,
+                currentState.searchQuery,
+                appSettings.apiKey,
                 appSettings.searchBatchLimit,
-                pageNumber * appSettings.searchBatchLimit // offset on the first page is 0 = 0*50, on second page is 50 = 1*50
+                currentState.pageNumber * appSettings.searchBatchLimit // offset on the first page is 0 = 0*50, on second page is 50 = 1*50
             )
+//todo                .debounce(300, TimeUnit.MILLISECONDS)
+//todo                  .switchMap(repository.loadGifs())
                 // debugging info to control how sequentially GIF are shown in recyclerview
-                .doOnSuccess { it.onEach { gif -> gif.pageNumber = pageNumber; gif.listNumber = listNumber++ } }
+                .doOnSuccess {
+                    it.onEach { gif ->
+                        gif.pageNumber = currentState.pageNumber; gif.listNumber = listNumber++
+                    }
+                }
                 // we increment page number only after we have successfully loaded it
-                .doOnSuccess { gifs += it; pageNumber++ }
-                .doOnTerminate { isLoading = false }
+                .doOnSuccess { currentState.gifs += it; currentState.pageNumber++ }
+                .doAfterTerminate { currentState.isLoading = false }
                 .subscribe(
                     { gifs -> onSuccess.accept(gifs) },
                     { throwable -> view?.showError(throwable) })
         )
     }
+
+    override fun isLoading() = currentState.isLoading
+
+    data class CurrentState(
+        val gifs: MutableList<Gif>,
+        var isLoading: Boolean = false,
+        var pageNumber: Int = 0,
+        var searchQuery: CharSequence = ""
+    )
 }

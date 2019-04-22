@@ -9,8 +9,8 @@ interface API {
 
     @GET("v1/gifs/search")
     fun getGifs(
-        @Query("q") searchQuery: String,
-        @Query("api_key") apiKey: String,
+        @Query("q") searchQuery: CharSequence,
+        @Query("api_key") apiKey: CharSequence,
         @Query("limit") limit: Int,
         @Query("offset") offset: Int = 0
     ): Single<EnvelopeList<Gif>>

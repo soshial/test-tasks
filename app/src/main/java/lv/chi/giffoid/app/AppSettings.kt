@@ -8,6 +8,5 @@ data class AppSettings(
     val searchGridColumns: Int,
     val searchBatchLimit: Int,
     val visibleThreshold: Int,
-    val apiKey: String
-
+    val apiKey: CharSequence
 )

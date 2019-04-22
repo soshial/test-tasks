@@ -8,11 +8,16 @@
 
     <EditText
         android:id="@+id/search_field"
-        android:hint="@string/edittext_search_hint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="text"
-        android:visibility="gone" />
+        android:hint="@string/edittext_search_hint"
+        android:inputType="text" />
+
+    <ImageView
+        android:id="@+id/clear_search"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/ic_menu_close_clear_cancel" />
 
     <FrameLayout
         android:layout_width="match_parent"
