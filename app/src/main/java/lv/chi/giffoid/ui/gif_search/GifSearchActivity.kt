@@ -17,7 +17,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import butterknife.BindView
-import butterknife.OnTextChanged
+import butterknife.OnClick
 import com.jakewharton.rxbinding2.view.RxView
 import com.jakewharton.rxbinding2.widget.RxTextView
 import io.reactivex.Observable
@@ -63,10 +63,16 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
     private lateinit var adapter: GifAdapter
     private lateinit var snackbarConnection: Snackbar
     private lateinit var snackbarServerError: Snackbar
-    @OnTextChanged(R.id.search_field)
-    fun searchTextEntered(text: CharSequence) {
-        presenter.loadGifs(text.trim().toString())
+
+    @OnClick(R.id.clear_search)
+    fun onClearSearch() {
+        presenter.clearSearchClicked()
+//        searchField.text.clear()
     }
+
+    override fun provideEditTextObservable(): Observable<String> =
+        RxTextView.textChangeEvents(searchField).map { it.text().trim().toString() }
+            .doOnNext { clearSearchButton.visibility = if (it.isNotEmpty()) View.VISIBLE else View.INVISIBLE }
     //endregion
     //================================================================================
 
@@ -79,7 +85,6 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
             getScreenWidth() / resources.getInteger(R.integer.search_grid_columns),
             this
         )
-        val g: Observable<CharSequence> = RxTextView.textChanges(searchField)
         val k: Observable<Any> = RxView.clicks(clearSearchButton)
 
         // TODO implement loading of downsampled/WebP images depending on metered network
@@ -99,7 +104,7 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
                 if (dy > 0) {
                     val lastVisibleItemId = layoutManager.findLastVisibleItemPositions(null).max() ?: 0
                     val totalItemCount = layoutManager.itemCount
-                    if (!presenter.currentState.isLoading && totalItemCount <= lastVisibleItemId + appSettings.visibleThreshold) {
+                    if (!presenter.isLoading() && totalItemCount <= lastVisibleItemId + appSettings.visibleThreshold) {
                         presenter.loadMoreGifs()
                     }
                 }
@@ -112,7 +117,7 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
 
         snackbarConnection = Snackbar.make(
             searchResultsRecyclerView, R.string.error_internet_connection, TimeUnit.SECONDS.toMillis(7).toInt()
-        ).setAction(getString(R.string.snackbar_search_retry)) { presenter.loadMoreGifs() }
+        ).setAction(getString(R.string.snackbar_search_retry)) { presenter.loadMoreGifs() } // TODO should work with both loaders
         snackbarServerError = Snackbar.make(
             searchResultsRecyclerView, R.string.error_server_problem, TimeUnit.SECONDS.toMillis(7).toInt()
         ).setAction(getString(R.string.snackbar_search_retry)) { presenter.loadMoreGifs() }

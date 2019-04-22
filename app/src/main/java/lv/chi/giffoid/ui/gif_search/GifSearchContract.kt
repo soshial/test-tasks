@@ -1,5 +1,6 @@
 package lv.chi.giffoid.ui.gif_search
 
+import io.reactivex.Observable
 import lv.chi.giffoid.data.Gif
 import lv.chi.giffoid.ui.mvp.MvpPresenter
 import lv.chi.giffoid.ui.mvp.MvpView
@@ -10,12 +11,13 @@ interface GifSearchContract {
         fun showAllGifs(gifs: List<Gif>)
         fun showLoadedGifs(gifs: List<Gif>, sizeOfAdded: Int)
         fun showError(error: Throwable)
+        fun provideEditTextObservable(): Observable<String>
     }
 
     interface Presenter : MvpPresenter<View> {
-        fun loadGifs(searchQuery: String)
         fun loadMoreGifs()
         fun isLoading(): Boolean
+        fun clearSearchClicked()
         val currentState: GifSearchPresenter.CurrentState
     }
 }
