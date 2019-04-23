@@ -1,7 +1,7 @@
 package lv.chi.giffoid.di;
 
 import dagger.Component;
-import lv.chi.giffoid.ui.gif_search.GifSearchActivity;
+import lv.chi.giffoid.ui.mvp.gif_search.GifSearchActivity;
 
 @UiScope
 @Component(modules = {ActivityModule.class}, dependencies = {AppComponent.class})

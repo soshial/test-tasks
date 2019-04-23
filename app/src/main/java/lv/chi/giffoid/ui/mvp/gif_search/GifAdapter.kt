@@ -1,4 +1,4 @@
-package lv.chi.giffoid.ui.gif_search
+package lv.chi.giffoid.ui.mvp.gif_search
 
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater

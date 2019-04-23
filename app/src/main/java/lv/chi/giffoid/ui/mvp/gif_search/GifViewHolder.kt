@@ -1,4 +1,4 @@
-package lv.chi.giffoid.ui.gif_search
+package lv.chi.giffoid.ui.mvp.gif_search
 
 import android.support.v4.widget.CircularProgressDrawable
 import android.support.v7.widget.RecyclerView

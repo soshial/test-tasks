@@ -4,8 +4,8 @@ import dagger.Binds
 import dagger.Module
 import lv.chi.giffoid.data.GifRepository
 import lv.chi.giffoid.data.GifRepositoryImpl
-import lv.chi.giffoid.ui.gif_search.GifSearchContract
-import lv.chi.giffoid.ui.gif_search.GifSearchPresenter
+import lv.chi.giffoid.ui.mvp.gif_search.GifSearchContract
+import lv.chi.giffoid.ui.mvp.gif_search.GifSearchPresenter
 
 // Also note that if a module has only abstract methods, then it can be implemented via an interface
 @Module

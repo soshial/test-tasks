@@ -1,4 +1,4 @@
-package lv.chi.giffoid.ui.gif_search
+package lv.chi.giffoid.ui.mvp.gif_search
 
 import io.reactivex.Single
 import io.reactivex.functions.Consumer

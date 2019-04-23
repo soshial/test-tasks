@@ -1,4 +1,4 @@
-package lv.chi.giffoid.ui.gif_search
+package lv.chi.giffoid.ui.mvp.gif_search
 
 import io.reactivex.Observable
 import lv.chi.giffoid.data.Gif
