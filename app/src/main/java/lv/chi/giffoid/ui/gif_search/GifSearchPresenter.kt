@@ -3,32 +3,34 @@ package lv.chi.giffoid.ui.gif_search
 import io.reactivex.Single
 import io.reactivex.functions.Consumer
 import lv.chi.giffoid.app.AppSettings
+import lv.chi.giffoid.app.SchedulerProvider
 import lv.chi.giffoid.data.Gif
 import lv.chi.giffoid.data.GifRepository
 import lv.chi.giffoid.ui.mvp.BasePresenter
-import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class GifSearchPresenter @Inject constructor(
     private val repository: GifRepository,
-    private val appSettings: AppSettings
+    private val appSettings: AppSettings,
+    private val schedulers: SchedulerProvider
 ) : BasePresenter<GifSearchContract.View>(), GifSearchContract.Presenter {
 
     override val currentState = CurrentState(mutableListOf())
 
     override fun bind(view: GifSearchContract.View) {
         super.bind(view)
+        // bind to user's search actions flow
         compositeDisposable.add(
             view.provideEditTextObservable()
+                .doOnNext { view.hideSearchButton(it.isEmpty()) }
                 .filter { it.length > 1 }
                 .distinctUntilChanged()
-                .debounce(300, TimeUnit.MILLISECONDS)
-                .doAfterNext {
-                    Timber.d("LENNY next") }
+                .debounce(appSettings.keyboardDebounceMs, TimeUnit.MILLISECONDS, schedulers.ui())
                 .switchMapSingle { s -> loadGifs(s) }
-                .subscribe(
-                    { }, { throwable -> view.showError(throwable) })
+                .doOnError { throwable -> view.showError(throwable) }
+                .retry()
+                .subscribe({ }, { })
         )
     }
 
@@ -56,17 +58,17 @@ class GifSearchPresenter @Inject constructor(
                 it.onEach { gif ->
                     gif.pageNumber = currentState.pageNumber; gif.listNumber = listNumber++
                 }
-                Timber.d("LENNY s:" + it.size)
             }
             // we increment page number only after we have successfully loaded it
             .doOnSuccess { currentState.gifs += it; currentState.pageNumber++ }
             .doOnSuccess(onSuccess)
+            .doOnError { throwable -> view?.showError(throwable) }
     }
 
     override fun isLoading() = false
 
     override fun clearSearchClicked() {
-
+        view?.clearSearch()
     }
 
     data class CurrentState(

@@ -8,5 +8,6 @@ data class AppSettings(
     val searchGridColumns: Int,
     val searchBatchLimit: Int,
     val visibleThreshold: Int,
+    val keyboardDebounceMs: Long,
     val apiKey: CharSequence
 )

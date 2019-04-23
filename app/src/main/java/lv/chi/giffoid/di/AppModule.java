@@ -35,6 +35,7 @@ public class AppModule {
                 context.getResources().getInteger(R.integer.search_grid_columns),
                 context.getResources().getInteger(R.integer.search_batch_limit),
                 context.getResources().getInteger(R.integer.search_visible_threshold),
+                500L,
                 context.getResources().getString(R.string.api_key)
         );
     }

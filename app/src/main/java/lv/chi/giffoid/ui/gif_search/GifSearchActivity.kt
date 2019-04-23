@@ -18,12 +18,11 @@ import android.widget.ImageView
 import android.widget.Toast
 import butterknife.BindView
 import butterknife.OnClick
-import com.jakewharton.rxbinding2.view.RxView
 import com.jakewharton.rxbinding2.widget.RxTextView
 import io.reactivex.Observable
 import lv.chi.giffoid.R
+import lv.chi.giffoid.api.GlideApp
 import lv.chi.giffoid.app.AppSettings
-import lv.chi.giffoid.app.GlideApp
 import lv.chi.giffoid.data.Gif
 import lv.chi.giffoid.di.ActivityComponent
 import lv.chi.giffoid.ui.mvp.BaseMvpActivity
@@ -65,14 +64,16 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
     private lateinit var snackbarServerError: Snackbar
 
     @OnClick(R.id.clear_search)
-    fun onClearSearch() {
+    fun onClearSearchClicked() {
         presenter.clearSearchClicked()
-//        searchField.text.clear()
+    }
+
+    override fun clearSearch() {
+        searchField.text.clear()
     }
 
     override fun provideEditTextObservable(): Observable<String> =
         RxTextView.textChangeEvents(searchField).map { it.text().trim().toString() }
-            .doOnNext { clearSearchButton.visibility = if (it.isNotEmpty()) View.VISIBLE else View.INVISIBLE }
     //endregion
     //================================================================================
 
@@ -82,10 +83,10 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
         adapter = GifAdapter(
             presenter.currentState.gifs,
             GlideApp.with(this),
+            // TODO check that it works on all devices
             getScreenWidth() / resources.getInteger(R.integer.search_grid_columns),
             this
         )
-        val k: Observable<Any> = RxView.clicks(clearSearchButton)
 
         // TODO implement loading of downsampled/WebP images depending on metered network
         if (ConnectivityManagerCompat.isActiveNetworkMetered((getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager))) {
@@ -94,8 +95,10 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
         }
 
         searchResultsRecyclerView.adapter = adapter
+        searchResultsRecyclerView.isSaveEnabled = true // save scrolling state
         val layoutManager = searchResultsRecyclerView.layoutManager as StaggeredGridLayoutManager
 
+        // TODO refactor
         searchResultsRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -110,16 +113,13 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
                 }
             }
         })
-//        TODO implement restoring scrolling state
-//        val scrollToElement = savedInstanceState?.getInt(scrollingState) ?: 10
-//        Timber.d("LENNY scroll $scrollToElement")
-//        layoutManager.scrollToPosition(scrollToElement)
 
         snackbarConnection = Snackbar.make(
-            searchResultsRecyclerView, R.string.error_internet_connection, TimeUnit.SECONDS.toMillis(7).toInt()
-        ).setAction(getString(R.string.snackbar_search_retry)) { presenter.loadMoreGifs() } // TODO should work with both loaders
+            findViewById(android.R.id.content), R.string.error_internet_connection, TimeUnit.SECONDS.toMillis(7).toInt()
+        )
+            .setAction(getString(R.string.snackbar_search_retry)) { presenter.loadMoreGifs() } // TODO should work with both loaders
         snackbarServerError = Snackbar.make(
-            searchResultsRecyclerView, R.string.error_server_problem, TimeUnit.SECONDS.toMillis(7).toInt()
+            findViewById(android.R.id.content), R.string.error_server_problem, TimeUnit.SECONDS.toMillis(7).toInt()
         ).setAction(getString(R.string.snackbar_search_retry)) { presenter.loadMoreGifs() }
     }
 
@@ -133,12 +133,20 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
         searchResultsRecyclerView.visibility = if (showResults) View.VISIBLE else View.GONE
     }
 
+    /**
+     * Shows results of a new search
+     */
     override fun showAllGifs(gifs: List<Gif>) {
-        showOrHideSearchResults(true)
+        showOrHideSearchResults(gifs.isNotEmpty())
         adapter.gifs = gifs
         adapter.notifyDataSetChanged()
+        // on each new search results we should scroll to the beginning
+        searchResultsRecyclerView.scrollToPosition(0)
     }
 
+    /**
+     * Shows more paginated results
+     */
     override fun showLoadedGifs(gifs: List<Gif>, sizeOfAdded: Int) {
         showOrHideSearchResults(true)
         adapter.gifs = gifs
@@ -150,12 +158,20 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
             error is UnknownHostException -> if (!snackbarConnection.isShown) snackbarConnection.show()
             error is HttpException -> if (!snackbarServerError.isShown) snackbarServerError.show()
             error.message is String -> Toast.makeText(this, error.message, Toast.LENGTH_LONG).show()
-            else -> Snackbar.make(searchResultsRecyclerView, getString(R.string.error_internet_unknown), 5000)
+            else -> Snackbar.make(
+                searchResultsRecyclerView,
+                getString(R.string.error_internet_unknown),
+                TimeUnit.SECONDS.toMillis(5).toInt()
+            )
         }
     }
 
-    fun getScreenWidth(): Int {
+    private fun getScreenWidth(): Int {
         return Resources.getSystem().displayMetrics.widthPixels
+    }
+
+    override fun hideSearchButton(hide: Boolean) {
+        clearSearchButton.visibility = if (hide) View.INVISIBLE else View.VISIBLE
     }
 
     override fun onGifClicked(gif: Gif) {

@@ -11,6 +11,8 @@ interface GifSearchContract {
         fun showAllGifs(gifs: List<Gif>)
         fun showLoadedGifs(gifs: List<Gif>, sizeOfAdded: Int)
         fun showError(error: Throwable)
+        fun clearSearch()
+        fun hideSearchButton(hide: Boolean)
         fun provideEditTextObservable(): Observable<String>
     }
 

@@ -8,22 +8,21 @@ import android.widget.ImageView
 import android.widget.TextView
 import lv.chi.giffoid.BuildConfig
 import lv.chi.giffoid.R
-import lv.chi.giffoid.app.GlideRequests
+import lv.chi.giffoid.api.GlideRequests
 import lv.chi.giffoid.data.Gif
 
 
 class GifViewHolder(
-    private val gifMainView: View,
+    gifMainView: View,
     private val glideRequests: GlideRequests,
     private val elementWidth: Int,
     private val gifClickedListener: GifAdapter.GifClickListener
-) :
-    RecyclerView.ViewHolder(gifMainView) {
+) : RecyclerView.ViewHolder(gifMainView) {
 
     // views
-    val gifImageView = gifMainView.findViewById<ImageView>(R.id.some_image)
-    val gifTextView = gifMainView.findViewById<TextView>(R.id.debug_text)
-    val circularProgressDrawable = CircularProgressDrawable(itemView.context)
+    private val gifImageView = itemView.findViewById<ImageView>(R.id.some_image)
+    private val gifTextView = itemView.findViewById<TextView>(R.id.debug_text)
+    private val circularProgressDrawable = CircularProgressDrawable(itemView.context)
 
     /**
      * Must be called in onBindViewHolder()
@@ -48,9 +47,9 @@ class GifViewHolder(
         // load GIF
         glideRequests
             .asGif()
-            .load(gif.imageUrls.fixedWidth.gif)
+            .load(gif.imageTypes.fixedWidthDownsampled.gif)
             .placeholder(circularProgressDrawable)
-            .error(R.drawable.abc_ic_star_black_36dp)
+//            .error(R.color.material_grey_100)
             .fitCenter()
             .into(gifImageView)
 
@@ -61,6 +60,5 @@ class GifViewHolder(
         circularProgressDrawable.strokeWidth = 5f
         circularProgressDrawable.centerRadius = 30f
         circularProgressDrawable.start()
-
     }
 }

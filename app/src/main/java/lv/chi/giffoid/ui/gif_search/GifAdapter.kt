@@ -4,15 +4,17 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import lv.chi.giffoid.R
-import lv.chi.giffoid.app.GlideRequests
+import lv.chi.giffoid.api.GlideRequests
 import lv.chi.giffoid.data.Gif
 
-
+/**
+ * TODO: implement preloading https://bumptech.github.io/glide/int/recyclerview.html
+ */
 class GifAdapter(
     var gifs: List<Gif>,
-    val glideRequests: GlideRequests,
-    val elementWidth: Int,
-    val onGifClickedListener: GifClickListener
+    private val glideRequests: GlideRequests,
+    private val elementWidth: Int,
+    private val onGifClickedListener: GifClickListener
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
