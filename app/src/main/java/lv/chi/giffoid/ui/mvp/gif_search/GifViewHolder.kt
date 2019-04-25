@@ -1,12 +1,12 @@
 package lv.chi.giffoid.ui.mvp.gif_search
 
+import android.graphics.PorterDuff
 import android.support.v4.widget.CircularProgressDrawable
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
-import lv.chi.giffoid.BuildConfig
 import lv.chi.giffoid.R
 import lv.chi.giffoid.api.GlideRequests
 import lv.chi.giffoid.data.Gif
@@ -39,7 +39,7 @@ class GifViewHolder(
         gifTextView.contentDescription = gif.title
 
         // populating with debug info
-        gifTextView.visibility = if (BuildConfig.DEBUG) {
+        gifTextView.visibility = if (false) {
             gifTextView.text = "page:${gif.pageNumber} / elem:${gif.listNumber}"
             View.VISIBLE
         } else View.INVISIBLE
@@ -47,9 +47,8 @@ class GifViewHolder(
         // load GIF
         glideRequests
             .asGif()
-            .load(gif.imageTypes.fixedWidthDownsampled.gif)
+            .load(gif.imageTypes.fixedWidth.gif)
             .placeholder(circularProgressDrawable)
-//            .error(R.color.material_grey_100)
             .fitCenter()
             .into(gifImageView)
 
@@ -59,6 +58,7 @@ class GifViewHolder(
     init {
         circularProgressDrawable.strokeWidth = 5f
         circularProgressDrawable.centerRadius = 30f
+        circularProgressDrawable.setColorFilter(itemView.resources.getColor(R.color.text_white), PorterDuff.Mode.ADD)
         circularProgressDrawable.start()
     }
 }

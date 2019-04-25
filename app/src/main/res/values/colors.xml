@@ -5,4 +5,7 @@
     <color name="colorAccent">#D81B60</color>
 
     <color name="error">#F00</color>
+    <color name="bg_black">#000</color>
+    <color name="bg_white">#fff</color>
+    <color name="text_white">#fff</color>
 </resources>

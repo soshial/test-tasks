@@ -1,25 +1,45 @@
 package lv.chi.giffoid.ui.mvp.gif_search
 
 import io.reactivex.Observable
-import lv.chi.giffoid.data.Gif
 import lv.chi.giffoid.ui.mvp.MvpPresenter
 import lv.chi.giffoid.ui.mvp.MvpView
 
 interface GifSearchContract {
     interface View : MvpView {
-        fun showOrHideSearchResults(showResults: Boolean)
-        fun showAllGifs(gifs: List<Gif>)
-        fun showLoadedGifs(gifs: List<Gif>, sizeOfAdded: Int)
+        fun showSearchStatus(searchStatus: SearchStatus)
+        fun showSearchResult(searchResult: SearchResult)
+
+        fun refreshSearchResults(positionStart: Int, itemCount: Int)
         fun showError(error: Throwable)
-        fun clearSearch()
-        fun hideSearchButton(hide: Boolean)
         fun provideEditTextObservable(): Observable<String>
     }
 
     interface Presenter : MvpPresenter<View> {
-        fun loadMoreGifs()
-        fun isLoading(): Boolean
+        fun retry()
+        fun loadMoreGifs(totalItemCount: Int, lastVisibleItemId: Int)
         fun clearSearchClicked()
         val currentState: GifSearchPresenter.CurrentState
     }
+}
+
+enum class SearchStatus {
+    /**
+     * User opens activity, search text field is empty
+     */
+    START,
+    REQUESTING_DATA,
+    /**
+     * {@link SearchResult} is received
+     */
+    FINISHED
+}
+
+enum class SearchResult {
+    NOTHING_FOUND,
+    LOADED,
+    /**
+     * When several searches has reaches its end
+     */
+    LOADED_EOF,
+    ERROR
 }

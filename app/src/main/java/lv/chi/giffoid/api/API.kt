@@ -13,6 +13,6 @@ interface API {
         @Query("api_key") apiKey: CharSequence,
         @Query("limit") limit: Int,
         @Query("offset") offset: Int = 0
-    ): Single<EnvelopeList<Gif>>
+    ): Single<GiphyResponse<Gif>>
 
 }

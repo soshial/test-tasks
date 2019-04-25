@@ -11,7 +11,7 @@ import lv.chi.giffoid.data.Gif
  * TODO: implement preloading https://bumptech.github.io/glide/int/recyclerview.html
  */
 class GifAdapter(
-    var gifs: List<Gif>,
+    private val gifs: MutableList<Gif>,
     private val glideRequests: GlideRequests,
     private val elementWidth: Int,
     private val onGifClickedListener: GifClickListener

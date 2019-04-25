@@ -4,20 +4,32 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/bg_black"
     android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/search_field"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/edittext_search_hint"
-        android:inputType="text" />
+        android:background="@color/bg_white"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp">
 
-    <ImageView
-        android:id="@+id/clear_search"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@android:drawable/ic_menu_close_clear_cancel" />
+        <EditText
+            android:id="@+id/search_field"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@null"
+            android:hint="@string/edittext_search_hint"
+            android:inputType="text" />
+
+        <ImageView
+            android:id="@+id/clear_search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|end"
+            android:src="@android:drawable/ic_menu_close_clear_cancel" />
+
+    </FrameLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -33,29 +45,31 @@
             tools:listitem="@layout/listitem_gif_result" />
 
         <android.support.constraint.ConstraintLayout
-            android:id="@+id/nothing_found"
+            android:id="@+id/search_results_info"
             android:layout_width="match_parent"
             android:layout_height="400dp"
             android:layout_gravity="top"
-            android:visibility="gone">
+            android:visibility="gone"
+            tools:visibility="visible">
 
             <ImageView
                 android:id="@+id/giffoid_icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@mipmap/ic_launcher_round"
+                android:src="@drawable/giphy_logo"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/no_results_explanation"
+                android:id="@+id/search_results_explanation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="Let's have some search, buddy?"
-                android:textColor="#000"
+                android:text="@string/ac_gif_search_nothing_found_description"
+                android:textAlignment="center"
+                android:textColor="@color/text_white"
                 android:textSize="22sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

@@ -15,6 +15,7 @@ import android.support.v7.widget.StaggeredGridLayoutManager
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import butterknife.BindView
 import butterknife.OnClick
@@ -22,7 +23,6 @@ import com.jakewharton.rxbinding2.widget.RxTextView
 import io.reactivex.Observable
 import lv.chi.giffoid.R
 import lv.chi.giffoid.api.GlideApp
-import lv.chi.giffoid.app.AppSettings
 import lv.chi.giffoid.data.Gif
 import lv.chi.giffoid.di.ActivityComponent
 import lv.chi.giffoid.ui.mvp.BaseMvpActivity
@@ -35,8 +35,6 @@ import javax.inject.Inject
 class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.GifClickListener {
     @Inject
     lateinit var presenter: GifSearchContract.Presenter
-    @Inject
-    lateinit var appSettings: AppSettings
 
     override fun providePresenter() = presenter
 
@@ -53,12 +51,16 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
     private val scrollingState = "SCROLLING_STATE"
     @BindView(R.id.clear_search)
     lateinit var clearSearchButton: ImageView
+    @BindView(R.id.giffoid_icon)
+    lateinit var giffoidIcon: ImageView
     @BindView(R.id.search_field)
     lateinit var searchField: EditText
+    @BindView(R.id.search_results_explanation)
+    lateinit var resultsExplTv: TextView
     @BindView(R.id.search_results_recycler_view)
     lateinit var searchResultsRecyclerView: RecyclerView
-    @BindView(R.id.nothing_found)
-    lateinit var nothingFoundInfo: ConstraintLayout
+    @BindView(R.id.search_results_info)
+    lateinit var searchResultsInfo: ConstraintLayout
     private lateinit var adapter: GifAdapter
     private lateinit var snackbarConnection: Snackbar
     private lateinit var snackbarServerError: Snackbar
@@ -68,22 +70,19 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
         presenter.clearSearchClicked()
     }
 
-    override fun clearSearch() {
-        searchField.text.clear()
-    }
-
     override fun provideEditTextObservable(): Observable<String> =
         RxTextView.textChangeEvents(searchField).map { it.text().trim().toString() }
     //endregion
     //================================================================================
 
+    // TODO add SearchView to AppBar
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        showOrHideSearchResults(false)
+
+        showSearchStatus(SearchStatus.START)
         adapter = GifAdapter(
             presenter.currentState.gifs,
             GlideApp.with(this),
-            // TODO check that it works on all devices
             getScreenWidth() / resources.getInteger(R.integer.search_grid_columns),
             this
         )
@@ -98,7 +97,6 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
         searchResultsRecyclerView.isSaveEnabled = true // save scrolling state
         val layoutManager = searchResultsRecyclerView.layoutManager as StaggeredGridLayoutManager
 
-        // TODO refactor
         searchResultsRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -107,9 +105,7 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
                 if (dy > 0) {
                     val lastVisibleItemId = layoutManager.findLastVisibleItemPositions(null).max() ?: 0
                     val totalItemCount = layoutManager.itemCount
-                    if (!presenter.isLoading() && totalItemCount <= lastVisibleItemId + appSettings.visibleThreshold) {
-                        presenter.loadMoreGifs()
-                    }
+                    presenter.loadMoreGifs(totalItemCount, lastVisibleItemId)
                 }
             }
         })
@@ -117,40 +113,21 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
         snackbarConnection = Snackbar.make(
             findViewById(android.R.id.content), R.string.error_internet_connection, TimeUnit.SECONDS.toMillis(7).toInt()
         )
-            .setAction(getString(R.string.snackbar_search_retry)) { presenter.loadMoreGifs() } // TODO should work with both loaders
+            .setAction(getString(R.string.snackbar_search_retry)) { presenter.retry() } // TODO should work with both loaders
         snackbarServerError = Snackbar.make(
             findViewById(android.R.id.content), R.string.error_server_problem, TimeUnit.SECONDS.toMillis(7).toInt()
-        ).setAction(getString(R.string.snackbar_search_retry)) { presenter.loadMoreGifs() }
+        ).setAction(getString(R.string.snackbar_search_retry)) { presenter.retry() }
     }
 
-    public override fun onSaveInstanceState(savedInstanceState: Bundle) {
-        savedInstanceState.putInt(scrollingState, 23)
-        super.onSaveInstanceState(savedInstanceState)
-    }
-
-    override fun showOrHideSearchResults(showResults: Boolean) {
-        nothingFoundInfo.visibility = if (showResults) View.GONE else View.VISIBLE
-        searchResultsRecyclerView.visibility = if (showResults) View.VISIBLE else View.GONE
-    }
-
-    /**
-     * Shows results of a new search
-     */
-    override fun showAllGifs(gifs: List<Gif>) {
-        showOrHideSearchResults(gifs.isNotEmpty())
-        adapter.gifs = gifs
-        adapter.notifyDataSetChanged()
-        // on each new search results we should scroll to the beginning
-        searchResultsRecyclerView.scrollToPosition(0)
-    }
-
-    /**
-     * Shows more paginated results
-     */
-    override fun showLoadedGifs(gifs: List<Gif>, sizeOfAdded: Int) {
-        showOrHideSearchResults(true)
-        adapter.gifs = gifs
-        adapter.notifyItemRangeInserted(adapter.itemCount, gifs.size)
+    override fun refreshSearchResults(positionStart: Int, itemCount: Int) {
+        if (positionStart == 0) {
+            // new search
+            adapter.notifyDataSetChanged()
+            // on each new search results we should scroll to the beginning
+            searchResultsRecyclerView.scrollToPosition(0)
+        } else {
+            adapter.notifyItemRangeInserted(positionStart, itemCount)
+        }
     }
 
     override fun showError(error: Throwable) {
@@ -166,12 +143,11 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
         }
     }
 
+    /**
+     * TODO check that it works on all devices
+     */
     private fun getScreenWidth(): Int {
         return Resources.getSystem().displayMetrics.widthPixels
-    }
-
-    override fun hideSearchButton(hide: Boolean) {
-        clearSearchButton.visibility = if (hide) View.INVISIBLE else View.VISIBLE
     }
 
     override fun onGifClicked(gif: Gif) {
@@ -184,5 +160,52 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
             .setNegativeButton(getString(R.string.dialog_gif_clicked_gallery)) { _, _ -> Unit }
             .setNegativeButton(getString(R.string.dialog_gif_clicked_close)) { _, _ -> Unit }
             .show()
+    }
+
+
+    override fun showSearchStatus(searchStatus: SearchStatus) {
+        when (searchStatus) {
+            SearchStatus.START -> {
+                searchField.text.clear()
+                clearSearchButton.visibility = View.GONE
+                searchResultsInfo.visibility = View.VISIBLE
+                resultsExplTv.setText(R.string.ac_gif_search_start_description)
+                searchResultsRecyclerView.visibility = View.GONE
+                GlideApp.with(this).load(R.drawable.giphy_logo).into(giffoidIcon)
+            }
+            SearchStatus.REQUESTING_DATA -> {
+                // add progressbar
+                clearSearchButton.visibility = View.VISIBLE
+                clearSearchButton.isEnabled = false
+                searchResultsInfo.visibility = View.GONE
+            }
+            SearchStatus.FINISHED -> {
+                clearSearchButton.visibility = View.VISIBLE
+                clearSearchButton.isEnabled = true
+                // depends on result
+            }
+        }
+    }
+
+    override fun showSearchResult(searchResult: SearchResult) {
+        when (searchResult) {
+            SearchResult.NOTHING_FOUND -> {
+                searchResultsInfo.visibility = View.VISIBLE
+                resultsExplTv.setText(R.string.ac_gif_search_nothing_found_description)
+                searchResultsRecyclerView.visibility = View.GONE
+                GlideApp.with(this).load(R.drawable.not_found).into(giffoidIcon)
+            }
+            SearchResult.LOADED -> {
+                searchResultsInfo.visibility = View.GONE
+                searchResultsRecyclerView.visibility = View.VISIBLE
+            }
+            SearchResult.LOADED_EOF -> {
+                searchResultsInfo.visibility = View.GONE
+                searchResultsRecyclerView.visibility = View.VISIBLE
+            }
+            SearchResult.ERROR -> {
+                searchResultsInfo.visibility = View.VISIBLE
+            }
+        }
     }
 }

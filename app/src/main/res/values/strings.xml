@@ -10,5 +10,6 @@
     <string name="dialog_gif_clicked_open_browser">Open in browser</string>
     <string name="dialog_gif_clicked_title">What would you like to do?</string>
     <string name="dialog_gif_clicked_descr">Would you like to open this GIF on Giphy or add to gallery?</string>
-    <string name="gif_search_start_descr">Let\'s have some search, buddy?</string>
+    <string name="ac_gif_search_start_description">Let\'s have some search, buddy?</string>
+    <string name="ac_gif_search_nothing_found_description">Nothing found.\nNext time, please, don\'t  search for “JЩk*%_8a0algЙ”, mkay?</string>
 </resources>
