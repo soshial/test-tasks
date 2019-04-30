@@ -16,7 +16,6 @@ import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import butterknife.BindView
 import butterknife.OnClick
 import com.jakewharton.rxbinding2.widget.RxTextView
@@ -26,7 +25,7 @@ import lv.chi.giffoid.api.GlideApp
 import lv.chi.giffoid.data.Gif
 import lv.chi.giffoid.di.ActivityComponent
 import lv.chi.giffoid.ui.mvp.BaseMvpActivity
-import retrofit2.adapter.rxjava2.HttpException
+import retrofit2.HttpException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -63,7 +62,6 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
     lateinit var searchResultsInfo: ConstraintLayout
     private lateinit var adapter: GifAdapter
     private lateinit var snackbarConnection: Snackbar
-    private lateinit var snackbarServerError: Snackbar
 
     @OnClick(R.id.clear_search)
     fun onClearSearchClicked() {
@@ -111,36 +109,33 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
         })
 
         snackbarConnection = Snackbar.make(
-            findViewById(android.R.id.content), R.string.error_internet_connection, TimeUnit.SECONDS.toMillis(7).toInt()
+            findViewById(android.R.id.content), R.string.error_internet_connection, TimeUnit.SECONDS.toMillis(3).toInt()
         )
-            .setAction(getString(R.string.snackbar_search_retry)) { presenter.retry() } // TODO should work with both loaders
-        snackbarServerError = Snackbar.make(
-            findViewById(android.R.id.content), R.string.error_server_problem, TimeUnit.SECONDS.toMillis(7).toInt()
-        ).setAction(getString(R.string.snackbar_search_retry)) { presenter.retry() }
     }
 
-    override fun refreshSearchResults(positionStart: Int, itemCount: Int) {
-        if (positionStart == 0) {
+    override fun refreshSearchResults(insertedPositionStart: Int, itemCount: Int) {
+        if (insertedPositionStart == 0) {
             // new search
             adapter.notifyDataSetChanged()
             // on each new search results we should scroll to the beginning
             searchResultsRecyclerView.scrollToPosition(0)
         } else {
-            adapter.notifyItemRangeInserted(positionStart, itemCount)
+            adapter.notifyItemRangeInserted(insertedPositionStart, itemCount)
         }
     }
 
-    override fun showError(error: Throwable) {
-        when {
-            error is UnknownHostException -> if (!snackbarConnection.isShown) snackbarConnection.show()
-            error is HttpException -> if (!snackbarServerError.isShown) snackbarServerError.show()
-            error.message is String -> Toast.makeText(this, error.message, Toast.LENGTH_LONG).show()
-            else -> Snackbar.make(
-                searchResultsRecyclerView,
-                getString(R.string.error_internet_unknown),
-                TimeUnit.SECONDS.toMillis(5).toInt()
-            )
-        }
+    override fun showError(error: Throwable?) {
+        if (!snackbarConnection.isShown) snackbarConnection.show()
+        val errorMessage: String? = error?.message
+        snackbarConnection.setText(
+            when {
+                error == null -> "WARNING: null"
+                error is UnknownHostException -> getString(R.string.error_internet_connection)
+                error is HttpException -> getString(R.string.error_server_problem)
+                errorMessage is String -> errorMessage
+                else -> getString(R.string.error_internet_unknown)
+            }
+        )
     }
 
     /**

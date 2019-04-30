@@ -52,7 +52,6 @@ public abstract class BaseFragment extends Fragment {
     @Override
     @CallSuper
     public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable final Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
         View view = getView();
         if (view == null) {
             view = inflater.inflate(getContentLayout(), container, false);

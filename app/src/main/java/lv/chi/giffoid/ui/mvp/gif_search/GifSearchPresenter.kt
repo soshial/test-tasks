@@ -26,20 +26,19 @@ class GifSearchPresenter @Inject constructor(
                 .distinctUntilChanged()
                 .debounce(appSettings.keyboardDebounceMs, TimeUnit.MILLISECONDS, schedulers.ui())
                 .switchMapSingle { s -> loadGifs(s) }
-                .retry()
                 .subscribe({ }, { })
         )
     }
 
     private fun loadGifs(searchQuery: CharSequence): Single<List<Gif>> {
-        currentState.searchQuery = searchQuery
+        currentState.searchQuery = searchQuery.toString()
         currentState.pageNumber = 0
         currentState.gifs.clear() // we should clear our list after new search is initiated
         return getGifLoaderSingle()
     }
 
     override fun loadMoreGifs(totalItemCount: Int, lastVisibleItemId: Int) {
-        if (lastVisibleItemId >= totalItemCount - appSettings.visibleThreshold) {
+        if (currentState.gifs.size < currentState.totalCount && lastVisibleItemId >= totalItemCount - appSettings.visibleThreshold) {
             retry()
         }
     }
@@ -62,7 +61,7 @@ class GifSearchPresenter @Inject constructor(
             currentState.searchQuery,
             appSettings.apiKey,
             appSettings.searchBatchLimit,
-            currentState.pageNumber * appSettings.searchBatchLimit // offset on the first page is 0 = 0*50, on second page is 50 = 1*50
+            currentState.pageNumber * appSettings.searchBatchLimit // offset on the very first page is 0 = 0*searchBatchLimit
         )
             // extract total search result count from response and figure out SearchResult
             .doOnSuccess { response ->
@@ -93,6 +92,14 @@ class GifSearchPresenter @Inject constructor(
                 view?.refreshSearchResults(positionStart, itemCount)
             }
             .doOnError { throwable -> view?.showError(throwable) }
+            // retry with timeout
+            .retryWhen { throwables ->
+                throwables.delay(
+                    appSettings.retryTimeoutSec,
+                    TimeUnit.SECONDS,
+                    schedulers.ui()
+                )
+            }
     }
 
     private fun changeSearchStatus(searchStatus: SearchStatus) {
@@ -109,7 +116,7 @@ class GifSearchPresenter @Inject constructor(
         var pageNumber: Int = 0,
         var offset: Int = 0,
         var totalCount: Int = -1,
-        var searchQuery: CharSequence = "",
+        var searchQuery: String = "",
         var searchStatus: SearchStatus = SearchStatus.START
     )
 }

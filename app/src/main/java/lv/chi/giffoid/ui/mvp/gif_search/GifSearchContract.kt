@@ -9,8 +9,8 @@ interface GifSearchContract {
         fun showSearchStatus(searchStatus: SearchStatus)
         fun showSearchResult(searchResult: SearchResult)
 
-        fun refreshSearchResults(positionStart: Int, itemCount: Int)
-        fun showError(error: Throwable)
+        fun refreshSearchResults(insertedPositionStart: Int, itemCount: Int)
+        fun showError(error: Throwable?)
         fun provideEditTextObservable(): Observable<String>
     }
 
@@ -24,7 +24,9 @@ interface GifSearchContract {
 
 enum class SearchStatus {
     /**
-     * User opens activity, search text field is empty
+     * 2 possible cases:
+     * 1) User opens activity, search text field is empty
+     * 2) User searches then clears input field with a button
      */
     START,
     REQUESTING_DATA,
