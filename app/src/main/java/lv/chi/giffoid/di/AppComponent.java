@@ -14,7 +14,5 @@ public interface AppComponent {
 
     AppSettings getAppSettings();
 
-//    Locale getLocale();
-
     API getApi();
 }

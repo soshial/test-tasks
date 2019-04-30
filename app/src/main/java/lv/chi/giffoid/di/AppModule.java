@@ -36,6 +36,7 @@ public class AppModule {
                 context.getResources().getInteger(R.integer.search_batch_limit),
                 context.getResources().getInteger(R.integer.search_visible_threshold),
                 500L,
+                3,
                 context.getResources().getString(R.string.api_key)
         );
     }

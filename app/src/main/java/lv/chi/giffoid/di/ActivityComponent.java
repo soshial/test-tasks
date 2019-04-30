@@ -8,4 +8,6 @@ import lv.chi.giffoid.ui.mvp.gif_search.GifSearchActivity;
 public interface ActivityComponent {
 
     void inject(GifSearchActivity activity);
+
+    void inject(lv.chi.giffoid.ui.mvvm.gif_search.GifSearchActivity activity);
 }

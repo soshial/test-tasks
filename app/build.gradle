@@ -11,7 +11,7 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "1.0.0"
-//        vectorDrawables.useSupportLibrary = true
+        vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     dataBinding {
@@ -74,6 +74,7 @@ dependencies {
     implementation 'nl.littlerobots.rxlint:rxlint:1.7.3'
     implementation 'com.jakewharton.rxbinding2:rxbinding:2.2.0'
     implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit"
+    implementation "android.arch.lifecycle:reactivestreams:1.1.1" // TODO upgrade to implementation "androidx.lifecycle:lifecycle-reactivestreams-ktx:2.0.0"
 
     // test
     testImplementation 'junit:junit:4.12'

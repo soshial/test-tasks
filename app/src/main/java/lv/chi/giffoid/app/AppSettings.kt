@@ -9,5 +9,6 @@ data class AppSettings(
     val searchBatchLimit: Int,
     val visibleThreshold: Int,
     val keyboardDebounceMs: Long,
+    val retryTimeoutSec: Long,
     val apiKey: CharSequence
 )

@@ -7,7 +7,7 @@ import lv.chi.giffoid.data.GifRepositoryImpl
 import lv.chi.giffoid.ui.mvp.gif_search.GifSearchContract
 import lv.chi.giffoid.ui.mvp.gif_search.GifSearchPresenter
 
-// Also note that if a module has only abstract methods, then it can be implemented via an interface
+// TODO If a module has only abstract methods, then it can be implemented via an interface
 @Module
 abstract class ActivityModule {
 
@@ -15,5 +15,5 @@ abstract class ActivityModule {
     abstract fun providesGifSearchPresenter(presenter: GifSearchPresenter): GifSearchContract.Presenter
 
     @Binds
-    abstract fun providesGifRepository(GifRepository: GifRepositoryImpl): GifRepository
+    abstract fun providesGifRepository(gifRepository: GifRepositoryImpl): GifRepository
 }

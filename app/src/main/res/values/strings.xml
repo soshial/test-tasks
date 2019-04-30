@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">giffoid</string>
     <string name="edittext_search_hint">Search for GIFFs</string>
-    <string name="error_internet_connection">Internet connection is lost. Retry?</string>
+    <string name="error_internet_connection">Internet connection is lost. Retrying…</string>
     <string name="error_server_problem">Problem with the server.</string>
     <string name="error_internet_unknown">Unknown error occurred.</string>
     <string name="snackbar_search_retry">retry</string>

@@ -7,6 +7,10 @@
 
         <import type="android.view.View" />
 
+        <import type="lv.chi.giffoid.ui.mvp.gif_search.SearchStatus" />
+
+        <import type="lv.chi.giffoid.ui.mvp.gif_search.SearchResult" />
+
         <variable
             name="viewmodel"
             type="lv.chi.giffoid.ui.mvvm.gif_search.GifViewModel" />
@@ -16,23 +20,34 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/bg_black"
         android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/search_field"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/edittext_search_hint"
-            android:inputType="text"
-            android:text="@={viewmodel.searchString2}" />
+            android:background="@color/bg_white"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
 
-        <ImageView
-            android:id="@+id/clear_search"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="@{() -> viewmodel.onClearSearch()}"
-            android:src="@android:drawable/ic_menu_close_clear_cancel"
-            android:visibility="@{viewmodel.searchString2.length > 0 ? View.VISIBLE : View.GONE}" />
+            <EditText
+                android:id="@+id/search_field"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@null"
+                android:hint="@string/edittext_search_hint"
+                android:inputType="text"
+                android:text="@={viewmodel.currentState.searchQuery}" />
+
+            <ImageView
+                android:id="@+id/clear_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:onClick="@{() -> viewmodel.onClearSearch()}"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:visibility="@{viewmodel.currentState.searchStatus == SearchStatus.START ? View.GONE: View.VISIBLE }" />
+        </FrameLayout>
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -43,17 +58,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:visibility="@{viewmodel.searchResultsVisibility? View.VISIBLE : View.GONE}"
+                android:visibility="@{viewmodel.currentState.searchStatus != SearchStatus.START &amp;&amp; viewmodel.currentState.searchResult == SearchResult.LOADED || viewmodel.currentState.searchResult == SearchResult.LOADED_EOF ? View.VISIBLE : View.INVISIBLE}"
                 app:layoutManager="android.support.v7.widget.StaggeredGridLayoutManager"
                 app:spanCount="@integer/search_grid_columns"
-                tools:listitem="@layout/listitem_gif_result" />
+                tools:listitem="@layout/listitem_gif_result"
+                tools:visibility="gone" />
 
             <android.support.constraint.ConstraintLayout
                 android:id="@+id/search_results_info"
                 android:layout_width="match_parent"
                 android:layout_height="400dp"
                 android:layout_gravity="top"
-                android:visibility="@{viewmodel.searchResultsVisibility? View.GONE: View.VISIBLE}">
+                android:visibility="@{viewmodel.currentState.searchStatus == SearchStatus.START || viewmodel.currentState.searchResult == SearchResult.NOTHING_FOUND || viewmodel.currentState.searchResult == SearchResult.ERROR ? View.VISIBLE : View.GONE}">
 
                 <ImageView
                     android:id="@+id/giffoid_icon"
@@ -70,12 +86,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
-                    android:text="@string/ac_gif_search_start_description"
-                    android:textColor="#000"
+                    android:text="@{viewmodel.currentState.searchStatus == SearchStatus.START ? @string/ac_gif_search_start_description : @string/ac_gif_search_nothing_found_description}"
+                    android:textAlignment="center"
+                    android:textColor="@color/text_white"
                     android:textSize="22sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/giffoid_icon" />
+                    app:layout_constraintTop_toBottomOf="@+id/giffoid_icon"
+                    tools:text="@string/ac_gif_search_nothing_found_description" />
             </android.support.constraint.ConstraintLayout>
         </FrameLayout>
     </LinearLayout>
