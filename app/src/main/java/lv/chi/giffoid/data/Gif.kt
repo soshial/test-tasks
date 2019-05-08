@@ -30,7 +30,11 @@ data class ImageTypes(
     val fixedWidth: UrlsAndSizes,
     @SerializedName("fixed_height_downsampled")
     val fixedWidthDownsampled: UrlsAndSizes
-)
+) {
+    override fun toString(): String {
+        return "[...]"
+    }
+}
 
 data class UrlsAndSizes(
     @SerializedName("url")
