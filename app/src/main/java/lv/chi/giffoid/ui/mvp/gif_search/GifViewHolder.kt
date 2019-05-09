@@ -46,7 +46,6 @@ class GifViewHolder(
 
         // load GIF
         glideRequests
-            .asGif()
             .load(gif.imageTypes.fixedWidth.gif)
             .placeholder(circularProgressDrawable)
             .fitCenter()

@@ -9,7 +9,7 @@ interface GifSearchContract {
         fun showSearchStatus(searchStatus: SearchStatus)
         fun showSearchResult(searchResult: SearchResult)
 
-        fun refreshSearchResults(insertedPositionStart: Int, itemCount: Int)
+        fun refreshSearchResults(insertedPositionStart: Int, itemCount: Int, resultsCount: Int)
         fun showError(error: Throwable?)
         fun provideEditTextObservable(): Observable<String>
     }
@@ -40,7 +40,7 @@ enum class SearchResult {
     NOTHING_FOUND,
     LOADED,
     /**
-     * When several searches has reaches its end
+     * When several searches has reached its end
      */
     LOADED_EOF,
     ERROR

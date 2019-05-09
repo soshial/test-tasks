@@ -15,6 +15,7 @@ import android.support.v7.widget.StaggeredGridLayoutManager
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import butterknife.BindView
 import butterknife.OnClick
@@ -58,8 +59,12 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
     lateinit var resultsExplTv: TextView
     @BindView(R.id.search_results_recycler_view)
     lateinit var searchResultsRecyclerView: RecyclerView
+    @BindView(R.id.progress_bar)
+    lateinit var progressBar: ProgressBar
     @BindView(R.id.search_results_info)
     lateinit var searchResultsInfo: ConstraintLayout
+    @BindView(R.id.results_count)
+    lateinit var resultsCountTv: TextView
     private lateinit var adapter: GifAdapter
     private lateinit var snackbarConnection: Snackbar
 
@@ -113,7 +118,7 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
         )
     }
 
-    override fun refreshSearchResults(insertedPositionStart: Int, itemCount: Int) {
+    override fun refreshSearchResults(insertedPositionStart: Int, itemCount: Int, resultsCount: Int) {
         if (insertedPositionStart == 0) {
             // new search
             adapter.notifyDataSetChanged()
@@ -122,6 +127,7 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
         } else {
             adapter.notifyItemRangeInserted(insertedPositionStart, itemCount)
         }
+        resultsCountTv.text = getString(R.string.ac_gif_search_number_results, resultsCount)
     }
 
     override fun showError(error: Throwable?) {
@@ -162,20 +168,25 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
         when (searchStatus) {
             SearchStatus.START -> {
                 searchField.text.clear()
+                progressBar.visibility = View.GONE
                 clearSearchButton.visibility = View.GONE
+                resultsCountTv.visibility = View.GONE
                 searchResultsInfo.visibility = View.VISIBLE
                 resultsExplTv.setText(R.string.ac_gif_search_start_description)
                 searchResultsRecyclerView.visibility = View.GONE
                 GlideApp.with(this).load(R.drawable.giphy_logo).into(giffoidIcon)
             }
             SearchStatus.REQUESTING_DATA -> {
-                // add progressbar
-                clearSearchButton.visibility = View.VISIBLE
-                clearSearchButton.isEnabled = false
+                progressBar.visibility = View.VISIBLE
+                clearSearchButton.visibility = View.GONE
+                resultsCountTv.visibility = View.GONE
+                // clearSearchButton.isEnabled = false
                 searchResultsInfo.visibility = View.GONE
             }
             SearchStatus.FINISHED -> {
+                progressBar.visibility = View.GONE
                 clearSearchButton.visibility = View.VISIBLE
+                resultsCountTv.visibility = View.VISIBLE
                 clearSearchButton.isEnabled = true
                 // depends on result
             }
@@ -197,9 +208,11 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
             SearchResult.LOADED_EOF -> {
                 searchResultsInfo.visibility = View.GONE
                 searchResultsRecyclerView.visibility = View.VISIBLE
+                // TODO the case when the list ended
             }
             SearchResult.ERROR -> {
-                searchResultsInfo.visibility = View.VISIBLE
+                searchResultsInfo.visibility = View.GONE
+                searchResultsRecyclerView.visibility = View.VISIBLE
             }
         }
     }

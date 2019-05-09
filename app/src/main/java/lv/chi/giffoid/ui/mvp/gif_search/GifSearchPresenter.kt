@@ -68,7 +68,7 @@ class GifSearchPresenter @Inject constructor(
                 currentState.totalCount = response.pagination.totalCount
                 currentState.offset = response.pagination.offset
                 changeSearchStatus(SearchStatus.FINISHED)
-                view?.showSearchResult(
+                changeSearchResult(
                     when {
                         currentState.totalCount == 0 -> SearchResult.NOTHING_FOUND
                         response.data.size == appSettings.searchBatchLimit -> SearchResult.LOADED
@@ -89,9 +89,9 @@ class GifSearchPresenter @Inject constructor(
                 currentState.gifs += gifs
                 // we increment page number only after we have successfully loaded it
                 currentState.pageNumber++
-                view?.refreshSearchResults(positionStart, itemCount)
+                view?.refreshSearchResults(positionStart, itemCount, currentState.totalCount)
             }
-            .doOnError { throwable -> view?.showError(throwable) }
+            .doOnError { throwable -> view?.showError(throwable); changeSearchResult(SearchResult.ERROR) }
             // retry with timeout
             .retryWhen { throwables ->
                 throwables.delay(
@@ -107,7 +107,13 @@ class GifSearchPresenter @Inject constructor(
         view?.showSearchStatus(searchStatus)
     }
 
+    private fun changeSearchResult(searchResult: SearchResult) {
+        currentState.searchResult = searchResult
+        view?.showSearchResult(searchResult)
+    }
+
     override fun clearSearchClicked() {
+        currentState.gifs.clear()
         changeSearchStatus(SearchStatus.START)
     }
 
@@ -117,6 +123,7 @@ class GifSearchPresenter @Inject constructor(
         var offset: Int = 0,
         var totalCount: Int = -1,
         var searchQuery: String = "",
-        var searchStatus: SearchStatus = SearchStatus.START
+        var searchStatus: SearchStatus = SearchStatus.START,
+        var searchResult: SearchResult = SearchResult.LOADED
     )
 }

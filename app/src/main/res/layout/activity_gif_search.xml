@@ -7,9 +7,9 @@
     android:background="@color/bg_black"
     android:orientation="vertical">
 
-    <FrameLayout
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:background="@color/bg_white"
         android:paddingStart="8dp"
         android:paddingEnd="8dp">
@@ -17,7 +17,7 @@
         <EditText
             android:id="@+id/search_field"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="match_parent"
             android:background="@null"
             android:hint="@string/edittext_search_hint"
             android:inputType="text" />
@@ -27,13 +27,28 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical|end"
-            android:src="@android:drawable/ic_menu_close_clear_cancel" />
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/search_field"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    </FrameLayout>
+        <TextView
+            android:id="@+id/results_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/clear_search"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@string/ac_gif_search_number_results" />
+
+    </android.support.constraint.ConstraintLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+        <include layout="@layout/progress_bar" />
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/search_results_recycler_view"

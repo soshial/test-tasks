@@ -12,4 +12,5 @@
     <string name="dialog_gif_clicked_descr">Would you like to open this GIF on Giphy or add to gallery?</string>
     <string name="ac_gif_search_start_description">Let\'s have some search, buddy?</string>
     <string name="ac_gif_search_nothing_found_description">Nothing found.\nNext time, please, don\'t  search for “JЩk*%_8a0algЙ”, mkay?</string>
+    <string name="ac_gif_search_number_results">%1$d results</string>
 </resources>

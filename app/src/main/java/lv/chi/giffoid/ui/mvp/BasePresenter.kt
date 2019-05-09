@@ -4,7 +4,7 @@ import android.support.annotation.CallSuper
 import io.reactivex.disposables.CompositeDisposable
 
 abstract class BasePresenter<V : MvpView> : MvpPresenter<V> {
-    protected var compositeDisposable = CompositeDisposable()
+    protected val compositeDisposable = CompositeDisposable()
     protected var view: V? = null
 
     @CallSuper
