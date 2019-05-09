@@ -1,8 +1,8 @@
 package lv.chi.giffoid.ui.mvp.gif_search
 
 import io.reactivex.Observable
-import lv.chi.giffoid.ui.mvp.MvpPresenter
-import lv.chi.giffoid.ui.mvp.MvpView
+import lv.chi.giffoid.ui.mvp.base.MvpPresenter
+import lv.chi.giffoid.ui.mvp.base.MvpView
 
 interface GifSearchContract {
     interface View : MvpView {

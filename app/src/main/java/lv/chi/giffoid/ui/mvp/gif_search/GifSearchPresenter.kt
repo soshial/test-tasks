@@ -5,7 +5,7 @@ import lv.chi.giffoid.app.AppSettings
 import lv.chi.giffoid.app.SchedulerProvider
 import lv.chi.giffoid.data.Gif
 import lv.chi.giffoid.data.GifRepository
-import lv.chi.giffoid.ui.mvp.BasePresenter
+import lv.chi.giffoid.ui.mvp.base.BasePresenter
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 

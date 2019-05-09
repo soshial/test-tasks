@@ -2,23 +2,18 @@ package lv.chi.giffoid.ui.mvvm.gif_search
 
 import android.arch.lifecycle.LiveDataReactiveStreams
 import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.content.res.Resources
 import android.databinding.DataBindingUtil
 import android.net.Uri
 import android.os.Bundle
-import android.support.constraint.ConstraintLayout
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.StaggeredGridLayoutManager
 import android.view.View
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.TextView
-import butterknife.BindView
-import butterknife.ButterKnife
 import io.reactivex.Observable
 import lv.chi.giffoid.R
 import lv.chi.giffoid.api.GlideApp
@@ -33,31 +28,19 @@ import retrofit2.HttpException
 import timber.log.Timber
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
 
 class GifSearchActivity : AppCompatActivity(), GifAdapter.GifClickListener {
 
     //region View elements
     //================================================================================
-    @BindView(R.id.clear_search)
-    lateinit var clearSearchButton: ImageView
-    @BindView(R.id.giffoid_icon)
-    lateinit var giffoidIcon: ImageView
-    @BindView(R.id.search_field)
-    lateinit var searchField: EditText
-    @BindView(R.id.search_results_explanation)
-    lateinit var resultsExplTv: TextView
-    @BindView(R.id.search_results_recycler_view)
-    lateinit var searchResultsRecyclerView: RecyclerView
-    @BindView(R.id.search_results_info)
-    lateinit var searchResultsInfo: ConstraintLayout
     private lateinit var adapter: GifAdapter
     private lateinit var snackbarConnection: Snackbar
-
+    private lateinit var binding: ActivityGifSearchMvvmBinding
     //endregion
     //================================================================================
-    @Inject
+
+    // @Inject
     lateinit var viewmodel: GifViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,10 +49,9 @@ class GifSearchActivity : AppCompatActivity(), GifAdapter.GifClickListener {
             .appComponent(GiffoidApp.appComponent)
             .build()
             .inject(this)
-        val binding: ActivityGifSearchMvvmBinding =
-            DataBindingUtil.setContentView(this, R.layout.activity_gif_search_mvvm)
-        ButterKnife.bind(this)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_gif_search_mvvm)
         binding.lifecycleOwner = this
+        viewmodel = ViewModelProviders.of(this).get(GifViewModel::class.java)
         binding.viewmodel = viewmodel
 
         viewmodel.currentState.searchStatus.observe(this, Observer { searchStatus -> showSearchStatus(searchStatus!!) })
@@ -91,11 +73,11 @@ class GifSearchActivity : AppCompatActivity(), GifAdapter.GifClickListener {
         )
         viewmodel.currentState.gifsUpdatedIndex.observe(this) { index -> refreshSearchResults(index) }
 
-        searchResultsRecyclerView.adapter = adapter
-        searchResultsRecyclerView.isSaveEnabled = true // save scrolling state
-        val layoutManager = searchResultsRecyclerView.layoutManager as StaggeredGridLayoutManager
+        binding.searchResultsRecyclerView.adapter = adapter
+        binding.searchResultsRecyclerView.isSaveEnabled = true // save scrolling state
+        val layoutManager = binding.searchResultsRecyclerView.layoutManager as StaggeredGridLayoutManager
 
-        searchResultsRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        binding.searchResultsRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy);
@@ -107,11 +89,8 @@ class GifSearchActivity : AppCompatActivity(), GifAdapter.GifClickListener {
                 }
             }
         })
-        val view = findViewById<View>(android.R.id.content)
-        val parent = view.parent
-        val nested = view.hasNestedScrollingParent()
         snackbarConnection = Snackbar.make(
-            view, "", TimeUnit.SECONDS.toMillis(3).toInt()
+            findViewById<View>(android.R.id.content), "", TimeUnit.SECONDS.toMillis(3).toInt()
         )
     }
 
@@ -120,7 +99,7 @@ class GifSearchActivity : AppCompatActivity(), GifAdapter.GifClickListener {
             // new search
             adapter.notifyDataSetChanged()
             // on each new search results we should scroll to the beginning
-            searchResultsRecyclerView.scrollToPosition(0)
+            binding.searchResultsRecyclerView.scrollToPosition(0)
         } else {
             adapter.notifyItemRangeInserted(insertedPositionStart, adapter.itemCount - insertedPositionStart)
         }
@@ -148,15 +127,15 @@ class GifSearchActivity : AppCompatActivity(), GifAdapter.GifClickListener {
     private fun showSearchStatus(searchStatus: SearchStatus) {
         Timber.d("LENNY $searchStatus")
         if (searchStatus == SearchStatus.START) {
-            searchField.text.clear()
-            GlideApp.with(this).load(R.drawable.giphy_logo).into(giffoidIcon)
+            binding.searchField.text.clear()
+            GlideApp.with(this).load(R.drawable.giphy_logo).into(binding.giffoidIcon)
         }
     }
 
     private fun showSearchResult(searchResult: SearchResult) {
         Timber.d("LENNY $searchResult")
         if (searchResult == SearchResult.NOTHING_FOUND) {
-            GlideApp.with(this).load(R.drawable.not_found).into(giffoidIcon)
+            GlideApp.with(this).load(R.drawable.not_found).into(binding.giffoidIcon)
         }
     }
 

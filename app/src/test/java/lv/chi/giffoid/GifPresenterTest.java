@@ -21,7 +21,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -42,6 +41,7 @@ public class GifPresenterTest {
             2, 50, 5, 500L,
             3, "sB9wP0usZzneQq3rkYcvt25dvz1bPXIG");
     private GifSearchPresenter presenter;
+
     //region Data generation methods
     private UrlsAndSizes uas = new UrlsAndSizes("https://media0.giphy.com/media/MWWg5GMVCyy5i/200w.gif", "https://media0.giphy.com/media/MWWg5GMVCyy5i/200w.webp", 200, 106);
     private ImageTypes imageTypes = new ImageTypes(uas, uas, uas, uas);
@@ -80,8 +80,12 @@ public class GifPresenterTest {
 
     private void prepareViewAndRepo(Observable<String> enteredSearches, List<Gif> testCollection) {
         Mockito.when(view.provideEditTextObservable()).thenReturn(enteredSearches);
-        Mockito.when(gifRepository.loadGifs(ArgumentMatchers.anyString(), appSettings.getApiKey(), appSettings.getSearchBatchLimit(), 0))
+        Mockito.when(gifRepository.loadGifs(Mockito.anyString(), Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(Single.just(new GiphyResponse<>(testCollection, new PaginationInfo(testCollection.size(), testCollection.size(), 0))));
+    }
+
+    private long sinceStartMs(long start) {
+        return (System.nanoTime() - start) / 1000000;
     }
     //endregion
 
@@ -158,7 +162,22 @@ public class GifPresenterTest {
 
     @Test
     public void too_fast_input_data_SHOULD_return_only_latter() {
-
+        long start = System.nanoTime();
+        Observable<String> testData = Observable.just("search1", "search2", "search3", "search4", "search5")
+                .concatMap(str -> Observable.just(str).delay(1000, TimeUnit.MILLISECONDS)
+                        .doOnNext(str2 -> testPrint(str2 + ": " + sinceStartMs(start) + "\n")));
+        List<Gif> testCollection = createRandomGifList(13);
+        prepareViewAndRepo(testData, testCollection);
+        presenter.bind(view);
+        try {
+            TimeUnit.MILLISECONDS.sleep(appSettings.getKeyboardDebounceMs() + 3000L);
+        } catch (InterruptedException e) {
+            testPrint("INTERRUPTED");
+        }
+        Assert.assertArrayEquals(presenter.getCurrentState().getGifs().toArray(), testCollection.toArray());
+        Assert.assertEquals(presenter.getCurrentState().getSearchStatus(), SearchStatus.FINISHED);
+        Assert.assertEquals("search5", presenter.getCurrentState().getSearchQuery());
+        Mockito.verify(view, Mockito.atMost(1)).refreshSearchResults(Mockito.any(), Mockito.any(), Mockito.any());
     }
 
     @Test

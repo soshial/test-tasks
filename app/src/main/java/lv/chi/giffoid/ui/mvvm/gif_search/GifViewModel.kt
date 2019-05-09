@@ -7,21 +7,27 @@ import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import lv.chi.giffoid.app.AppSettings
 import lv.chi.giffoid.app.SchedulerProvider
-import lv.chi.giffoid.app.SingleLiveEvent
 import lv.chi.giffoid.data.Gif
 import lv.chi.giffoid.data.GifRepository
+import lv.chi.giffoid.ui.base.NonNullMutableLiveData
+import lv.chi.giffoid.ui.base.SingleLiveEvent
 import lv.chi.giffoid.ui.mvp.gif_search.SearchResult
 import lv.chi.giffoid.ui.mvp.gif_search.SearchStatus
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-class GifViewModel @Inject constructor(
+public class GifViewModel @Inject constructor(
     private val repository: GifRepository,
     private val appSettings: AppSettings,
     private val schedulers: SchedulerProvider
 ) : ViewModel() {
     val currentState = CurrentStateMvvm()
     private val compositeDisposable = CompositeDisposable()
+
+    init {
+        Timber.w("LENNY created")
+    }
 
     fun init(editTextObservable: Observable<String>) {
         compositeDisposable.add(
@@ -115,11 +121,15 @@ class GifViewModel @Inject constructor(
 
     data class CurrentStateMvvm(
         val gifs: MutableList<Gif> = mutableListOf(),
-        val gifsUpdatedIndex: NonNullMutableLiveData<Int> = NonNullMutableLiveData(0),
+        val gifsUpdatedIndex: NonNullMutableLiveData<Int> = NonNullMutableLiveData(
+            0
+        ),
         var pageNumber: Int = 0,
         var offset: Int = 0,
         var totalCount: Int = -1,
-        val searchQuery: NonNullMutableLiveData<String> = NonNullMutableLiveData(""),
+        val searchQuery: NonNullMutableLiveData<String> = NonNullMutableLiveData(
+            ""
+        ),
         val searchStatus: MutableLiveData<SearchStatus> = MutableLiveData(),
         val searchResult: MutableLiveData<SearchResult> = MutableLiveData(),
         val errorResult: SingleLiveEvent<Throwable> = SingleLiveEvent()

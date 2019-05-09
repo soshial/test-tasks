@@ -25,7 +25,7 @@ import lv.chi.giffoid.R
 import lv.chi.giffoid.api.GlideApp
 import lv.chi.giffoid.data.Gif
 import lv.chi.giffoid.di.ActivityComponent
-import lv.chi.giffoid.ui.mvp.BaseMvpActivity
+import lv.chi.giffoid.ui.mvp.base.BaseMvpActivity
 import retrofit2.HttpException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
@@ -43,12 +43,11 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
     }
 
     override fun getContentLayout(): Int {
-        return R.layout.activity_gif_search
+        return R.layout.activity_gif_search_mvp
     }
 
     //region View elements
     //================================================================================
-    private val scrollingState = "SCROLLING_STATE"
     @BindView(R.id.clear_search)
     lateinit var clearSearchButton: ImageView
     @BindView(R.id.giffoid_icon)
@@ -90,10 +89,8 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
             this
         )
 
-        // TODO implement loading of downsampled/WebP images depending on metered network
         if (ConnectivityManagerCompat.isActiveNetworkMetered((getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager))) {
-            // Checks if the device is on a metered network
-//            searchField.text = "METERED"
+            // TODO implement loading of downsampled/WebP images depending if on metered network
         }
 
         searchResultsRecyclerView.adapter = adapter
@@ -135,7 +132,7 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
         val errorMessage: String? = error?.message
         snackbarConnection.setText(
             when {
-                error == null -> "WARNING: null"
+                error == null -> getString(R.string.error_internet_unknown)
                 error is UnknownHostException -> getString(R.string.error_internet_connection)
                 error is HttpException -> getString(R.string.error_server_problem)
                 errorMessage is String -> errorMessage
@@ -158,7 +155,7 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
             .setPositiveButton(getString(R.string.dialog_gif_clicked_open_browser)) { _, _ ->
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(gif.url)))
             }
-            .setNegativeButton(getString(R.string.dialog_gif_clicked_gallery)) { _, _ -> Unit }
+            .setNegativeButton(getString(R.string.dialog_gif_clicked_gallery)) { _, _ -> Unit /* TODO implement add to Gboard */ }
             .setNegativeButton(getString(R.string.dialog_gif_clicked_close)) { _, _ -> Unit }
             .show()
     }
@@ -208,7 +205,7 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
             SearchResult.LOADED_EOF -> {
                 searchResultsInfo.visibility = View.GONE
                 searchResultsRecyclerView.visibility = View.VISIBLE
-                // TODO the case when the list ended
+                // TODO show UI indicator, that the list has ended
             }
             SearchResult.ERROR -> {
                 searchResultsInfo.visibility = View.GONE

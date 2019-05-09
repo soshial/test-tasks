@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package lv.chi.giffoid.app;
+package lv.chi.giffoid.ui.base;
 
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.MutableLiveData;

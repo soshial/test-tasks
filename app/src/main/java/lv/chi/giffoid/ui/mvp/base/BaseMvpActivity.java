@@ -1,4 +1,4 @@
-package lv.chi.giffoid.ui.mvp;
+package lv.chi.giffoid.ui.mvp.base;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;

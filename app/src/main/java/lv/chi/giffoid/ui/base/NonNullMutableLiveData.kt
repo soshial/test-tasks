@@ -1,4 +1,4 @@
-package lv.chi.giffoid.ui.mvvm.gif_search
+package lv.chi.giffoid.ui.base
 
 import android.arch.lifecycle.LifecycleOwner
 import android.arch.lifecycle.MutableLiveData

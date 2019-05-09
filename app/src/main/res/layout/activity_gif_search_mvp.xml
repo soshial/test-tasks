@@ -55,6 +55,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
+            android:scrollbarThumbVertical="@drawable/element_scrollbar"
+            android:scrollbars="vertical"
             app:layoutManager="android.support.v7.widget.StaggeredGridLayoutManager"
             app:spanCount="@integer/search_grid_columns"
             tools:listitem="@layout/listitem_gif_result" />

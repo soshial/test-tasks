@@ -58,6 +58,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
+                android:scrollbarThumbVertical="@drawable/element_scrollbar"
+                android:scrollbars="vertical"
                 android:visibility="@{viewmodel.currentState.searchStatus != SearchStatus.START &amp;&amp; viewmodel.currentState.searchResult == SearchResult.LOADED || viewmodel.currentState.searchResult == SearchResult.LOADED_EOF ? View.VISIBLE : View.INVISIBLE}"
                 app:layoutManager="android.support.v7.widget.StaggeredGridLayoutManager"
                 app:spanCount="@integer/search_grid_columns"

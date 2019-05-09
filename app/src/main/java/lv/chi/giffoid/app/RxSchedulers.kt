@@ -8,13 +8,8 @@ import java.util.concurrent.Executors
 
 
 class RxSchedulers : SchedulerProvider {
-    private val singleIoDatabase: Scheduler
-    private val singleIoNetwork: Scheduler
-
-    init {
-        singleIoDatabase = Schedulers.from(Executors.newSingleThreadExecutor())
-        singleIoNetwork = Schedulers.from(Executors.newSingleThreadExecutor())
-    }
+    private val singleIoDatabase: Scheduler = Schedulers.from(Executors.newSingleThreadExecutor())
+    private val singleIoNetwork: Scheduler = Schedulers.from(Executors.newSingleThreadExecutor())
 
     override fun ui(): Scheduler {
         return AndroidSchedulers.mainThread()

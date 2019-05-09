@@ -1,4 +1,4 @@
-package lv.chi.giffoid.ui.mvp
+package lv.chi.giffoid.ui.mvp.base
 
 interface MvpPresenter<L : MvpView> {
     fun bind(view: L)

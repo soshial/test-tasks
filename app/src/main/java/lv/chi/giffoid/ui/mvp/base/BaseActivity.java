@@ -1,4 +1,4 @@
-package lv.chi.giffoid.ui.mvp;
+package lv.chi.giffoid.ui.mvp.base;
 
 import android.app.Activity;
 import android.content.Context;
