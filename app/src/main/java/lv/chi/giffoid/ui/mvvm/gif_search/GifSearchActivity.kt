@@ -2,7 +2,6 @@ package lv.chi.giffoid.ui.mvvm.gif_search
 
 import android.arch.lifecycle.LiveDataReactiveStreams
 import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.content.res.Resources
 import android.databinding.DataBindingUtil
@@ -28,11 +27,12 @@ import retrofit2.HttpException
 import timber.log.Timber
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 
 class GifSearchActivity : AppCompatActivity(), GifAdapter.GifClickListener {
 
-    //region View elements
+    //region elements related to View
     //================================================================================
     private lateinit var adapter: GifAdapter
     private lateinit var snackbarConnection: Snackbar
@@ -40,7 +40,7 @@ class GifSearchActivity : AppCompatActivity(), GifAdapter.GifClickListener {
     //endregion
     //================================================================================
 
-    // @Inject
+    @Inject
     lateinit var viewmodel: GifViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,7 +51,9 @@ class GifSearchActivity : AppCompatActivity(), GifAdapter.GifClickListener {
             .inject(this)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_gif_search_mvvm)
         binding.lifecycleOwner = this
-        viewmodel = ViewModelProviders.of(this).get(GifViewModel::class.java)
+        // TODO inject using ViewModel factory to avoid reloading all data
+        // viewmodel = ViewModelProviders.of(this).get(GifViewModel::class.java)
+        // viewmodel = ViewModelProviders.of(this, vmFactory)[GifViewModel::class.java]
         binding.viewmodel = viewmodel
 
         viewmodel.currentState.searchStatus.observe(this, Observer { searchStatus -> showSearchStatus(searchStatus!!) })

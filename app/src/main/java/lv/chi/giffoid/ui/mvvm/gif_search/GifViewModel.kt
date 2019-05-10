@@ -1,7 +1,6 @@
 package lv.chi.giffoid.ui.mvvm.gif_search
 
 import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.ViewModel
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
@@ -9,24 +8,24 @@ import lv.chi.giffoid.app.AppSettings
 import lv.chi.giffoid.app.SchedulerProvider
 import lv.chi.giffoid.data.Gif
 import lv.chi.giffoid.data.GifRepository
-import lv.chi.giffoid.ui.base.NonNullMutableLiveData
-import lv.chi.giffoid.ui.base.SingleLiveEvent
 import lv.chi.giffoid.ui.mvp.gif_search.SearchResult
 import lv.chi.giffoid.ui.mvp.gif_search.SearchStatus
-import timber.log.Timber
+import lv.chi.giffoid.ui.mvvm.base.NonNullMutableLiveData
+import lv.chi.giffoid.ui.mvvm.base.SingleLiveEvent
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-public class GifViewModel @Inject constructor(
+class GifViewModel @Inject constructor(
     private val repository: GifRepository,
     private val appSettings: AppSettings,
     private val schedulers: SchedulerProvider
-) : ViewModel() {
+) : BaseViewModel() {
     val currentState = CurrentStateMvvm()
     private val compositeDisposable = CompositeDisposable()
 
-    init {
-        Timber.w("LENNY created")
+    override fun onCleared() {
+        super.onCleared()
+        compositeDisposable.clear()
     }
 
     fun init(editTextObservable: Observable<String>) {
