@@ -15,11 +15,8 @@ import android.support.v7.widget.StaggeredGridLayoutManager
 import android.view.View
 import io.reactivex.Observable
 import lv.chi.giffoid.R
-import lv.chi.giffoid.api.GlideApp
 import lv.chi.giffoid.app.GiffoidApp
 import lv.chi.giffoid.data.Gif
-import lv.chi.giffoid.databinding.ActivityGifSearchMvvmBinding
-import lv.chi.giffoid.di.DaggerActivityComponent
 import lv.chi.giffoid.ui.mvp.gif_search.GifAdapter
 import lv.chi.giffoid.ui.mvp.gif_search.SearchResult
 import lv.chi.giffoid.ui.mvp.gif_search.SearchStatus
@@ -53,7 +50,7 @@ class GifSearchActivity : AppCompatActivity(), GifAdapter.GifClickListener {
         binding.lifecycleOwner = this
         // TODO inject using ViewModel factory to avoid reloading all data
         // viewmodel = ViewModelProviders.of(this).get(GifViewModel::class.java)
-        // viewmodel = ViewModelProviders.of(this, vmFactory)[GifViewModel::class.java]
+        // viewmodel = ViewModelProviders.of(this, viewModelFactory)[GifViewModel::class.java]
         binding.viewmodel = viewmodel
 
         viewmodel.currentState.searchStatus.observe(this, Observer { searchStatus -> showSearchStatus(searchStatus!!) })
@@ -107,9 +104,6 @@ class GifSearchActivity : AppCompatActivity(), GifAdapter.GifClickListener {
         }
     }
 
-    /**
-     * TODO check that it works on all devices
-     */
     private fun getScreenWidth(): Int {
         return Resources.getSystem().displayMetrics.widthPixels
     }

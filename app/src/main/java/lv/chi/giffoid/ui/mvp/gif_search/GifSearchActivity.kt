@@ -22,7 +22,6 @@ import butterknife.OnClick
 import com.jakewharton.rxbinding2.widget.RxTextView
 import io.reactivex.Observable
 import lv.chi.giffoid.R
-import lv.chi.giffoid.api.GlideApp
 import lv.chi.giffoid.data.Gif
 import lv.chi.giffoid.di.ActivityComponent
 import lv.chi.giffoid.ui.mvp.base.BaseMvpActivity
@@ -141,9 +140,6 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
         )
     }
 
-    /**
-     * TODO check that it works on all devices
-     */
     private fun getScreenWidth(): Int {
         return Resources.getSystem().displayMetrics.widthPixels
     }
