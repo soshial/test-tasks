@@ -1,6 +1,7 @@
 package lv.chi.giffoid.ui.mvp.gif_search
 
 import io.reactivex.Single
+import io.reactivex.disposables.Disposable
 import lv.chi.giffoid.app.AppSettings
 import lv.chi.giffoid.app.SchedulerProvider
 import lv.chi.giffoid.data.Gif
@@ -16,6 +17,7 @@ class GifSearchPresenter @Inject constructor(
 ) : BasePresenter<GifSearchContract.View>(), GifSearchContract.Presenter {
 
     override val currentState = CurrentState(mutableListOf())
+    var disposableLoadMore: Disposable? = null
 
     override fun bind(view: GifSearchContract.View) {
         super.bind(view)
@@ -25,53 +27,53 @@ class GifSearchPresenter @Inject constructor(
                 .filter { it.length > 1 }
                 .distinctUntilChanged()
                 .debounce(appSettings.keyboardDebounceMs, TimeUnit.MILLISECONDS, schedulers.ui())
-                .switchMapSingle { s -> loadGifs(s) }
+                .switchMapSingle { searchQuery ->
+                    disposableLoadMore?.dispose() // load data for new string has higher priority, so we cancel "load more" request TODO fix a RecyclerView crash
+                    currentState.searchQuery = searchQuery
+                    currentState.pageNumber = 0
+                    currentState.gifs.clear() // we should clear our list after new search is initiated
+                    getGifLoaderSingle()
+                }
                 .subscribe({ }, { })
         )
     }
 
-    private fun loadGifs(searchQuery: CharSequence): Single<List<Gif>> {
-        currentState.searchQuery = searchQuery.toString()
-        currentState.pageNumber = 0
-        currentState.gifs.clear() // we should clear our list after new search is initiated
-        return getGifLoaderSingle()
-    }
-
-    override fun loadMoreGifs(totalItemCount: Int, lastVisibleItemId: Int) {
-        if (currentState.gifs.size < currentState.totalCount && lastVisibleItemId >= totalItemCount - appSettings.visibleThreshold) {
-            retry()
-        }
-    }
-
     /**
-     * Retries to load data again (both initial search and pagination)
+     * Retries to load additional data during pagination
      */
-    override fun retry() {
-        if (currentState.searchStatus != SearchStatus.REQUESTING_DATA) {
-            compositeDisposable.add(
-                getGifLoaderSingle().subscribe({ }, { })
-            )
+    override fun loadMoreGifs(totalItemCount: Int, lastVisibleItemId: Int) {
+        if (currentState.gifs.size < currentState.totalCount && lastVisibleItemId >= totalItemCount - appSettings.visibleThreshold
+            && currentState.searchStatus != SearchStatus.REQUESTING_DATA
+        ) {
+            // we can load
+            val isLoadingMoreDataNow = !(disposableLoadMore?.isDisposed ?: true)
+            if (!isLoadingMoreDataNow) {
+                val disposableTmp = getGifLoaderSingle().subscribe({ }, { })
+                compositeDisposable.add(disposableTmp)
+                disposableLoadMore = disposableTmp
+            }
         }
     }
 
     private fun getGifLoaderSingle(): Single<List<Gif>> {
-        var listNumber = 0
         changeSearchStatus(SearchStatus.REQUESTING_DATA)
+        var listNumber = 0
         return repository.loadGifs(
             currentState.searchQuery,
             appSettings.apiKey,
             appSettings.searchBatchLimit,
             currentState.pageNumber * appSettings.searchBatchLimit // offset on the very first page is 0 = 0*searchBatchLimit
         )
+            .observeOn(schedulers.ui())
             // extract total search result count from response and figure out SearchResult
-            .doOnSuccess { response ->
-                currentState.totalCount = response.pagination.totalCount
-                currentState.offset = response.pagination.offset
+            .doOnSuccess { giphyResponse ->
+                currentState.totalCount = giphyResponse.pagination.totalCount
+                currentState.offset = giphyResponse.pagination.offset
                 changeSearchStatus(SearchStatus.FINISHED)
                 changeSearchResult(
                     when {
                         currentState.totalCount == 0 -> SearchResult.NOTHING_FOUND
-                        response.data.size == appSettings.searchBatchLimit -> SearchResult.LOADED
+                        giphyResponse.data.size == appSettings.searchBatchLimit -> SearchResult.LOADED
                         else -> SearchResult.LOADED_EOF
                     }
                 )
@@ -84,15 +86,15 @@ class GifSearchPresenter @Inject constructor(
                 }
             }
             .doOnSuccess { gifs ->
-                val itemCount = gifs.size
+                val insertedItemCount = gifs.size
                 val positionStart = currentState.gifs.size
                 currentState.gifs += gifs
                 // we increment page number only after we have successfully loaded it
                 currentState.pageNumber++
-                view?.refreshSearchResults(positionStart, itemCount, currentState.totalCount)
+                view?.refreshSearchResults(positionStart, insertedItemCount, currentState.totalCount)
             }
             .doOnError { throwable -> view?.showError(throwable); changeSearchResult(SearchResult.ERROR) }
-            // retry with timeout
+            // retry with timeout, forever
             .retryWhen { throwables ->
                 throwables.delay(
                     appSettings.retryTimeoutSec,

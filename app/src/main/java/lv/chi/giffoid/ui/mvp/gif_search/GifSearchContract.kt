@@ -9,13 +9,12 @@ interface GifSearchContract {
         fun showSearchStatus(searchStatus: SearchStatus)
         fun showSearchResult(searchResult: SearchResult)
 
-        fun refreshSearchResults(insertedPositionStart: Int, itemCount: Int, resultsCount: Int)
+        fun refreshSearchResults(insertedPositionStart: Int, insertedItemCount: Int, resultsCount: Int)
         fun showError(error: Throwable?)
         fun provideEditTextObservable(): Observable<String>
     }
 
     interface Presenter : MvpPresenter<View> {
-        fun retry()
         fun loadMoreGifs(totalItemCount: Int, lastVisibleItemId: Int)
         fun clearSearchClicked()
         val currentState: GifSearchPresenter.CurrentState
@@ -29,9 +28,12 @@ enum class SearchStatus {
      * 2) User searches then clears input field with a button
      */
     START,
+    /**
+     * In process of fetching data, also if encounters error
+     */
     REQUESTING_DATA,
     /**
-     * {@link SearchResult} is received
+     * Only when {@link SearchResult} is received without error
      */
     FINISHED
 }

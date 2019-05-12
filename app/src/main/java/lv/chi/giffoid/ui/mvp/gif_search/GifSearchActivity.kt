@@ -22,6 +22,7 @@ import butterknife.OnClick
 import com.jakewharton.rxbinding2.widget.RxTextView
 import io.reactivex.Observable
 import lv.chi.giffoid.R
+import lv.chi.giffoid.api.GlideApp
 import lv.chi.giffoid.data.Gif
 import lv.chi.giffoid.di.ActivityComponent
 import lv.chi.giffoid.ui.mvp.base.BaseMvpActivity
@@ -80,7 +81,15 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        setupGifRecyclerView()
         showSearchStatus(SearchStatus.START)
+
+        snackbarConnection = Snackbar.make(
+            findViewById(android.R.id.content), R.string.error_internet_connection, TimeUnit.SECONDS.toMillis(3).toInt()
+        )
+    }
+
+    private fun setupGifRecyclerView() {
         adapter = GifAdapter(
             presenter.currentState.gifs,
             GlideApp.with(this),
@@ -108,20 +117,16 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
                 }
             }
         })
-
-        snackbarConnection = Snackbar.make(
-            findViewById(android.R.id.content), R.string.error_internet_connection, TimeUnit.SECONDS.toMillis(3).toInt()
-        )
     }
 
-    override fun refreshSearchResults(insertedPositionStart: Int, itemCount: Int, resultsCount: Int) {
+    override fun refreshSearchResults(insertedPositionStart: Int, insertedItemCount: Int, resultsCount: Int) {
         if (insertedPositionStart == 0) {
             // new search
             adapter.notifyDataSetChanged()
             // on each new search results we should scroll to the beginning
             searchResultsRecyclerView.scrollToPosition(0)
         } else {
-            adapter.notifyItemRangeInserted(insertedPositionStart, itemCount)
+            adapter.notifyItemRangeInserted(insertedPositionStart, insertedItemCount)
         }
         resultsCountTv.text = getString(R.string.ac_gif_search_number_results, resultsCount)
     }

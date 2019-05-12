@@ -15,8 +15,11 @@ import android.support.v7.widget.StaggeredGridLayoutManager
 import android.view.View
 import io.reactivex.Observable
 import lv.chi.giffoid.R
+import lv.chi.giffoid.api.GlideApp
 import lv.chi.giffoid.app.GiffoidApp
 import lv.chi.giffoid.data.Gif
+import lv.chi.giffoid.databinding.ActivityGifSearchMvvmBinding
+import lv.chi.giffoid.di.DaggerActivityComponent
 import lv.chi.giffoid.ui.mvp.gif_search.GifAdapter
 import lv.chi.giffoid.ui.mvp.gif_search.SearchResult
 import lv.chi.giffoid.ui.mvp.gif_search.SearchStatus
@@ -48,7 +51,7 @@ class GifSearchActivity : AppCompatActivity(), GifAdapter.GifClickListener {
             .inject(this)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_gif_search_mvvm)
         binding.lifecycleOwner = this
-        // TODO inject using ViewModel factory to avoid reloading all data
+        // TODO inject using ViewModel factory to avoid reloading all data on configuration change
         // viewmodel = ViewModelProviders.of(this).get(GifViewModel::class.java)
         // viewmodel = ViewModelProviders.of(this, viewModelFactory)[GifViewModel::class.java]
         binding.viewmodel = viewmodel
@@ -64,6 +67,13 @@ class GifSearchActivity : AppCompatActivity(), GifAdapter.GifClickListener {
                 )
             )
         )
+        setupGifRecyclerView()
+        snackbarConnection = Snackbar.make(
+            findViewById<View>(android.R.id.content), "", TimeUnit.SECONDS.toMillis(3).toInt()
+        )
+    }
+
+    private fun setupGifRecyclerView() {
         adapter = GifAdapter(
             viewmodel.currentState.gifs,
             GlideApp.with(this),
@@ -88,9 +98,6 @@ class GifSearchActivity : AppCompatActivity(), GifAdapter.GifClickListener {
                 }
             }
         })
-        snackbarConnection = Snackbar.make(
-            findViewById<View>(android.R.id.content), "", TimeUnit.SECONDS.toMillis(3).toInt()
-        )
     }
 
     private fun refreshSearchResults(insertedPositionStart: Int) {
