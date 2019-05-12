@@ -19,6 +19,7 @@ import lv.chi.giffoid.ui.mvp.gif_search.SearchResult;
 import lv.chi.giffoid.ui.mvp.gif_search.SearchStatus;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -33,6 +34,8 @@ import java.util.concurrent.TimeUnit;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GifPresenterTest {
+    @Rule
+    public RxTrampolineSchedulerRule rule;
     @Mock
     GifRepository gifRepository;
     @Mock
@@ -70,18 +73,22 @@ public class GifPresenterTest {
         return Arrays.asList(gifTestArray);
     }
 
-    private GiphyResponse createGiphyResponse(int gifCount, int offset) {
+    private GiphyResponse<Gif> createGiphyResponse(int gifCount, int offset) {
         return new GiphyResponse<>(createRandomGifList(gifCount), new PaginationInfo(1000, gifCount, offset));
     }
 
-    private GiphyResponse createGiphyResponse(List<Gif> list, int offset) {
-        return new GiphyResponse<>(list, new PaginationInfo(1000, list.size(), offset));
+    private GiphyResponse<Gif> createGiphyResponse(List<Gif> testCollection, int offset, int totalCount) {
+        return new GiphyResponse<>(testCollection, new PaginationInfo(totalCount, testCollection.size(), offset));
+    }
+
+    private void prepareViewAndRepo(Observable<String> enteredSearches, List<Gif> testCollection, int offset, int totalCount) {
+        Mockito.when(view.provideEditTextObservable()).thenReturn(enteredSearches);
+        Mockito.when(gifRepository.loadGifs(Mockito.anyString(), Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
+                .thenReturn(Single.just(createGiphyResponse(testCollection, offset, totalCount)));
     }
 
     private void prepareViewAndRepo(Observable<String> enteredSearches, List<Gif> testCollection) {
-        Mockito.when(view.provideEditTextObservable()).thenReturn(enteredSearches);
-        Mockito.when(gifRepository.loadGifs(Mockito.anyString(), Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
-                .thenReturn(Single.just(new GiphyResponse<>(testCollection, new PaginationInfo(testCollection.size(), testCollection.size(), 0))));
+        prepareViewAndRepo(enteredSearches, testCollection, 0, 100000);
     }
 
     private long sinceStartMs(long start) {
@@ -99,15 +106,11 @@ public class GifPresenterTest {
 
     @Test
     public void current_state_SHOULD_hold_received_data() {
-        String testRequest = "more people";
+        Observable<String> testData = Observable.just("more people");
+        List<Gif> testCollection = createRandomGifList(7);
+        prepareViewAndRepo(testData, testCollection);
 
-        List<Gif> testCollection = Arrays.asList(createRandomGif(), createRandomGif(), createRandomGif());
-
-        Mockito.when(view.provideEditTextObservable()).thenReturn(Observable.just(testRequest));
-        Mockito.when(gifRepository.loadGifs(testRequest, appSettings.getApiKey(), appSettings.getSearchBatchLimit(), 0))
-                .thenReturn(Single.just(new GiphyResponse<>(testCollection, new PaginationInfo(testCollection.size(), testCollection.size(), 0))));
         presenter.bind(view);
-
         try {
             TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
@@ -120,13 +123,10 @@ public class GifPresenterTest {
 
     @Test
     public void nothing_found_result_SHOULD_have_corresponding_state() {
-        String testRequest = "LIU AJHLSJH LJSHGLHSJGFLHJS";
-
+        Observable<String> testData = Observable.just("LIU AJHLSJH LJSHGLHSJGFLHJS");
         List<Gif> testCollection = Collections.emptyList();
+        prepareViewAndRepo(testData, testCollection, 0, 0);
 
-        Mockito.when(view.provideEditTextObservable()).thenReturn(Observable.just(testRequest));
-        Mockito.when(gifRepository.loadGifs(testRequest, appSettings.getApiKey(), appSettings.getSearchBatchLimit(), 0))
-                .thenReturn(Single.just(new GiphyResponse<>(testCollection, new PaginationInfo(testCollection.size(), testCollection.size(), 0))));
         presenter.bind(view);
         Assert.assertEquals(presenter.getCurrentState().getSearchStatus(), SearchStatus.FINISHED); // we received needed data
         try {
@@ -141,12 +141,10 @@ public class GifPresenterTest {
 
     @Test
     public void clear_search_SHOULD_invoke_status_start() {
-        String testRequest = "search entry";
-        List<Gif> testCollection = Arrays.asList(createRandomGif(), createRandomGif(), createRandomGif(), createRandomGif());
+        Observable<String> testData = Observable.just("search entry");
+        List<Gif> testCollection = createRandomGifList(7);
+        prepareViewAndRepo(testData, testCollection);
 
-        Mockito.when(view.provideEditTextObservable()).thenReturn(Observable.just(testRequest));
-        Mockito.when(gifRepository.loadGifs(testRequest, appSettings.getApiKey(), appSettings.getSearchBatchLimit(), 0))
-                .thenReturn(Single.just(new GiphyResponse<>(testCollection, new PaginationInfo(testCollection.size(), testCollection.size(), 0))));
         presenter.bind(view);
         try {
             TimeUnit.SECONDS.sleep(1);
@@ -164,10 +162,11 @@ public class GifPresenterTest {
     public void too_fast_input_data_SHOULD_return_only_latter() {
         long start = System.nanoTime();
         Observable<String> testData = Observable.just("search1", "search2", "search3", "search4", "search5")
-                .concatMap(str -> Observable.just(str).delay(1000, TimeUnit.MILLISECONDS)
+                .concatMap(str -> Observable.just(str).delay(100, TimeUnit.MILLISECONDS)
                         .doOnNext(str2 -> testPrint(str2 + ": " + sinceStartMs(start) + "\n")));
         List<Gif> testCollection = createRandomGifList(13);
         prepareViewAndRepo(testData, testCollection);
+
         presenter.bind(view);
         try {
             TimeUnit.MILLISECONDS.sleep(appSettings.getKeyboardDebounceMs() + 3000L);
@@ -182,11 +181,11 @@ public class GifPresenterTest {
 
     @Test
     public void loading_data_SHOULD_have_corresponding_status() {
-        String testRequest = "search entry";
+        Observable<String> testData = Observable.just("search entry");
         List<Gif> testCollection = Arrays.asList(createRandomGif(), createRandomGif(), createRandomGif(), createRandomGif());
 
-        Mockito.when(view.provideEditTextObservable()).thenReturn(Observable.just(testRequest));
-        Mockito.when(gifRepository.loadGifs(testRequest, appSettings.getApiKey(), appSettings.getSearchBatchLimit(), 0))
+        Mockito.when(view.provideEditTextObservable()).thenReturn(testData);
+        Mockito.when(gifRepository.loadGifs("search entry", appSettings.getApiKey(), appSettings.getSearchBatchLimit(), 0))
                 .thenReturn(
                         Single.just(new GiphyResponse<>(testCollection, new PaginationInfo(testCollection.size(), testCollection.size(), 0)))
                                 .delay(3, TimeUnit.SECONDS)
