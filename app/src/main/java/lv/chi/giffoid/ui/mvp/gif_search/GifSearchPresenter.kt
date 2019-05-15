@@ -24,6 +24,7 @@ class GifSearchPresenter @Inject constructor(
         // bind to user's search actions flow
         compositeDisposable.add(
             view.provideEditTextObservable()
+                .map(String::trim)
                 .filter { it.length > 1 }
                 .distinctUntilChanged()
                 .debounce(appSettings.keyboardDebounceMs, TimeUnit.MILLISECONDS, schedulers.ui())

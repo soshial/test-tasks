@@ -73,7 +73,7 @@ class GifSearchActivity : BaseMvpActivity(), GifSearchContract.View, GifAdapter.
     }
 
     override fun provideEditTextObservable(): Observable<String> =
-        RxTextView.textChangeEvents(searchField).map { it.text().trim().toString() }
+        RxTextView.textChangeEvents(searchField).map { it.text().toString() }
     //endregion
     //================================================================================
 
